@@ -9,7 +9,7 @@ sqlalchemy==2.0.23
 alembic==1.12.1
 
 # Data Processing
-numpy==1.25.2
+numpy>=1.26.0
 
 # AI/ML
 spotipy==2.22.1
