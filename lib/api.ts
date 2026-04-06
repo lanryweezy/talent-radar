@@ -2,19 +2,31 @@ import { Artist, Track, TrendingResponse, SearchQuery } from './types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-export async function searchArtists(query: string, limit: number = 20): Promise<Artist[]> {
+export async function searchArtists(query: string, limit: number = 20, filters?: Partial<SearchQuery>): Promise<Artist[]> {
   const response = await fetch(`${API_URL}/search/artists`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ query, limit }),
+    body: JSON.stringify({ query, limit, ...filters }),
   });
 
   if (!response.ok) {
     throw new Error('Search failed');
   }
 
+  return response.json();
+}
+
+export async function compareArtists(artistIds: string[]): Promise<any[]> {
+  const response = await fetch(`${API_URL}/analytics/compare?artist_ids=${artistIds.join(',')}`);
+  if (!response.ok) throw new Error('Comparison failed');
+  return response.json();
+}
+
+export async function getSimilarArtists(artistId: string, limit: number = 10): Promise<any> {
+  const response = await fetch(`${API_URL}/discover/similar/${artistId}?limit=${limit}`);
+  if (!response.ok) throw new Error('Similar artists discovery failed');
   return response.json();
 }
 
@@ -83,6 +95,12 @@ export async function getTrendingArtists(
     throw new Error('Failed to get trending artists');
   }
 
+  return response.json();
+}
+
+export async function getMarketHeatmap(): Promise<any[]> {
+  const response = await fetch(`${API_URL}/analytics/heatmap`);
+  if (!response.ok) throw new Error('Failed to get market heatmap');
   return response.json();
 }
 

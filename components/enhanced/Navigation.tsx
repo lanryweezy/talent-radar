@@ -50,11 +50,11 @@ export default function Navigation({ user }: NavigationProps) {
   }, [])
 
   const navigationItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: BarChart3 },
+    { href: '/dashboard', label: 'Intelligence', icon: BarChart3 },
     { href: '/discover', label: 'Discover', icon: Search },
-    { href: '/trending', label: 'Trending', icon: TrendingUp },
-    { href: '/network', label: 'Network', icon: Users },
-    { href: '/insights', label: 'Insights', icon: Star },
+    { href: '/analytics', label: 'Market', icon: TrendingUp },
+    { href: '/compare', label: 'Compare', icon: Zap },
+    { href: '/artists', label: 'Roster', icon: Users },
   ]
 
   const isActive = (href: string) => pathname === href

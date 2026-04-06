@@ -43,7 +43,8 @@ app = FastAPI(
     title="TalentRadar API",
     description="AI-Powered A&R Discovery Tool",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    root_path="/api/v1"
 )
 
 # CORS middleware
@@ -83,12 +84,22 @@ async def search_artists(query: SearchQuery):
         enhanced_results = []
         for artist in spotify_results:
             ai_analysis = await ai_service.analyze_artist(artist)
-            enhanced_results.append({
+            enhanced_artist = {
                 **artist,
                 "breakout_score": ai_analysis.get("breakout_score", 0),
                 "genre_confidence": ai_analysis.get("genre_confidence", 0),
                 "trend_direction": ai_analysis.get("trend_direction", "stable")
-            })
+            }
+
+            # Apply filters
+            if enhanced_artist["breakout_score"] < (query.min_breakout_score or 0):
+                continue
+            if enhanced_artist["breakout_score"] > (query.max_breakout_score or 100):
+                continue
+            if enhanced_artist["followers"] < (query.min_followers or 0):
+                continue
+
+            enhanced_results.append(enhanced_artist)
         
         return enhanced_results
     except Exception as e:
@@ -158,6 +169,15 @@ async def get_growth_analytics(artist_id: str, days: int = 30):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get analytics: {str(e)}")
 
+@app.get("/analytics/heatmap")
+async def get_market_heatmap():
+    """Get regional market heat scores"""
+    try:
+        heatmap_data = await analytics_service.get_market_heatmap()
+        return heatmap_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get heatmap: {str(e)}")
+
 @app.post("/predict/breakout")
 async def predict_breakout(artist_ids: List[str]):
     """Predict breakout potential for multiple artists"""
@@ -182,6 +202,24 @@ async def discover_similar_artists(artist_id: str, limit: int = 10):
         return {"similar_artists": similar_artists}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Discovery failed: {str(e)}")
+
+@app.get("/analytics/compare")
+async def compare_artists(artist_ids: str):
+    """Compare multiple artists side-by-side"""
+    try:
+        ids = artist_ids.split(",")
+        comparison_data = []
+        for aid in ids:
+            details = await spotify_service.get_artist_details(aid)
+            growth = await analytics_service.get_growth_metrics(aid)
+            ai_insights = await ai_service.analyze_artist(details)
+            comparison_data.append({
+                "artist": {**details, **ai_insights},
+                "growth": growth
+            })
+        return comparison_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Comparison failed: {str(e)}")
 
 # CRM Endpoints
 @app.get("/crm/artists", response_model=List[ArtistResponse])

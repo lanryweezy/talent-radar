@@ -7,6 +7,9 @@ class SearchQuery(BaseModel):
     limit: Optional[int] = Field(20, description="Number of results to return")
     genre: Optional[str] = Field(None, description="Filter by genre")
     region: Optional[str] = Field(None, description="Filter by region")
+    min_breakout_score: Optional[float] = Field(0.0, description="Minimum breakout score")
+    max_breakout_score: Optional[float] = Field(100.0, description="Maximum breakout score")
+    min_followers: Optional[int] = Field(0, description="Minimum followers")
 
 class ArtistResponse(BaseModel):
     id: str

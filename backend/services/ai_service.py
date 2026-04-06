@@ -154,33 +154,58 @@ class AIService:
         return similar_artists
     
     def _calculate_breakout_score(self, artist_data: Dict) -> float:
-        """Calculate breakout potential score (0-100)"""
+        """Calculate breakout potential score (0-100) using advanced A&R logic"""
         
-        # Factors that contribute to breakout potential
-        factors = {
-            "popularity": artist_data.get("popularity", 0) / 100,  # Normalize to 0-1
-            "follower_growth": min(artist_data.get("follower_growth", 0), 1.0),
-            "engagement_rate": min(artist_data.get("engagement_rate", 0.05) * 10, 1.0),
-            "cross_platform": 0.7 if artist_data.get("instagram_handle") else 0.3,
-            "genre_popularity": 0.8 if "afrobeats" in artist_data.get("genres", []) else 0.6,
-            "recency": 0.9  # Assume recent activity
-        }
+        # 1. Reach & Popularity (20%)
+        # High popularity is good, but medium popularity with high growth is better for A&R
+        popularity = artist_data.get("popularity", 0)
+        pop_score = 1.0 if 40 <= popularity <= 80 else (popularity / 100)
+        
+        # 2. Velocity & Growth (30%)
+        # Crucial for early discovery
+        followers = artist_data.get("followers", 0)
+        follower_growth = artist_data.get("follower_growth", 0)
+        # If no growth data, estimate based on popularity/followers ratio
+        if follower_growth == 0 and followers > 0:
+            follower_growth = min(0.5, (popularity / 100) * (1000 / max(1, followers)))
+        growth_score = min(1.0, follower_growth * 5) # 20% growth = 1.0 score
+
+        # 3. Market Saturation & Genre Trend (20%)
+        # Afrobeats, Amapiano, and Latin are high-growth genres
+        genres = [g.lower() for g in artist_data.get("genres", [])]
+        high_growth_genres = ["afrobeats", "amapiano", "trap", "reggaeton", "drill"]
+        genre_score = 0.5
+        if any(g in genres for g in high_growth_genres):
+            genre_score = 0.9
+        elif any("pop" in g or "hip hop" in g for g in genres):
+            genre_score = 0.7
+
+        # 4. Engagement & Digital Footprint (20%)
+        # Cross-platform presence is a strong signal
+        platforms = 0
+        if artist_data.get("instagram_handle"): platforms += 0.3
+        if artist_data.get("tiktok_handle"): platforms += 0.4
+        if artist_data.get("twitter_handle"): platforms += 0.3
+        if not (artist_data.get("instagram_handle") or artist_data.get("tiktok_handle")):
+            platforms = 0.2 # Baseline
+
+        # 5. Engagement Quality (10%)
+        engagement = artist_data.get("engagement_rate", 0.03)
+        eng_score = min(1.0, engagement * 20) # 5% engagement = 1.0 score
         
         # Weighted calculation
-        weights = {
-            "popularity": 0.2,
-            "follower_growth": 0.25,
-            "engagement_rate": 0.2,
-            "cross_platform": 0.15,
-            "genre_popularity": 0.1,
-            "recency": 0.1
-        }
-        
-        score = sum(factors[key] * weights[key] for key in factors.keys()) * 100
-        
-        # Add some randomness for realism
-        score += random.uniform(-5, 5)
-        
+        score = (
+            (pop_score * 0.20) +
+            (growth_score * 0.30) +
+            (genre_score * 0.20) +
+            (platforms * 0.20) +
+            (eng_score * 0.10)
+        ) * 100
+
+        # Add "Discovery Bonus" for relatively unknown artists with high popularity
+        if followers < 50000 and popularity > 60:
+            score += 10
+
         return max(0, min(100, score))
     
     def _analyze_trend_direction(self, artist_data: Dict) -> str:
