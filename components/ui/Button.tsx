@@ -17,14 +17,14 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const baseClasses = 'inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
     
     const variants = {
-      default: 'bg-gray-900 text-white hover:bg-gray-800 focus-visible:ring-gray-900',
+      default: 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-500/20 focus-visible:ring-indigo-600',
       destructive: 'bg-red-500 text-white hover:bg-red-600 focus-visible:ring-red-500',
-      outline: 'border border-gray-300 bg-transparent hover:bg-gray-50 hover:text-gray-900 focus-visible:ring-gray-900',
-      secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus-visible:ring-gray-900',
-      ghost: 'hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-gray-900',
-      link: 'text-gray-900 underline-offset-4 hover:underline focus-visible:ring-gray-900',
-      gradient: 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black hover:from-yellow-500 hover:to-orange-600 shadow-lg hover:shadow-xl transform hover:scale-105 focus-visible:ring-yellow-400',
-      glow: 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black hover:from-yellow-500 hover:to-orange-600 shadow-lg hover:shadow-2xl transform hover:scale-105 focus-visible:ring-yellow-400 animate-pulse'
+      outline: 'border border-white/20 bg-white/5 backdrop-blur-md text-white hover:bg-white/10 focus-visible:ring-white',
+      secondary: 'bg-white/10 backdrop-blur-md text-white hover:bg-white/20 border border-white/10 focus-visible:ring-white',
+      ghost: 'text-gray-400 hover:text-white hover:bg-white/5 focus-visible:ring-white',
+      link: 'text-indigo-400 underline-offset-4 hover:underline focus-visible:ring-indigo-400',
+      gradient: 'bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 text-white hover:opacity-90 shadow-xl shadow-orange-500/20 transform hover:-translate-y-0.5 focus-visible:ring-orange-500',
+      glow: 'bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transform hover:-translate-y-0.5 focus-visible:ring-orange-500 transition-all duration-300'
     }
     
     const sizes = {

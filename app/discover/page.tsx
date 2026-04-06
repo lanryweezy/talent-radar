@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Search, Filter, MapPin, Calendar, TrendingUp, Users, Music, Play, Star, Heart, Share2, Zap } from 'lucide-react'
 import ArtistCard from '@/components/ArtistCard'
+import { Button } from '@/components/ui/Button'
+import { Badge } from '@/components/ui/Badge'
 
 interface DiscoverFilters {
   genre: string
@@ -295,66 +297,81 @@ export default function Discover() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#020617] text-white selection:bg-indigo-500/30">
+      {/* Background Glows */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full" />
+      </div>
+
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
+      <div className="relative z-10 border-b border-white/10 bg-black/20 backdrop-blur-md pt-20 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-end justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Discover Artists</h1>
-              <p className="text-gray-600 mt-1">Find the next big thing before everyone else</p>
+              <div className="flex items-center space-x-2 mb-2">
+                <Badge variant="outline" className="bg-indigo-500/10 border-indigo-500/20 text-indigo-400 font-bold uppercase tracking-widest text-[10px]">Discovery Engine</Badge>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-[0.9]">
+                Global <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Discovery.</span>
+              </h1>
+              <p className="text-gray-400 mt-4 text-xl font-medium max-w-xl">
+                Find the next big thing before everyone else using our AI-powered discovery tools.
+              </p>
             </div>
-            <div className="flex items-center space-x-4">
-              <button
+            <div className="flex items-center space-x-4 w-full md:w-auto">
+              <Button
+                variant="outline"
                 onClick={() => setShowFilters(!showFilters)}
-                className="btn btn-outline"
+                className="flex-1 md:flex-none py-6 px-8"
               >
                 <Filter className="w-4 h-4 mr-2" />
-                Filters
-              </button>
-              <button className="btn btn-primary">
+                {showFilters ? 'Hide Filters' : 'Advanced Filters'}
+              </Button>
+              <Button variant="gradient" className="flex-1 md:flex-none py-6 px-8">
                 <Zap className="w-4 h-4 mr-2" />
                 AI Recommendations
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
         {/* Search Bar */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="flex items-center space-x-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <div className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8 mb-12">
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="flex-1 w-full relative">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search artists, genres, tags, or locations..."
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Search artists, genres, tags, or locations across 150+ countries..."
+                className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
               />
             </div>
-            <button
+            <Button
+              variant="secondary"
               onClick={resetFilters}
-              className="btn btn-outline"
+              className="w-full md:w-auto py-4 px-8"
             >
-              Clear All
-            </button>
+              Reset All
+            </Button>
           </div>
         </div>
 
         {/* Advanced Filters */}
         {showFilters && (
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <h3 className="text-lg font-semibold mb-4">Advanced Filters</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8 mb-12">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-6">Discovery Parameters</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
-                <label className="label">Genre</label>
+                <label className="text-xs font-bold text-gray-400 mb-2 block">Primary Genre</label>
                 <select
                   value={filters.genre}
                   onChange={(e) => setFilters({...filters, genre: e.target.value})}
-                  className="input w-full"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:ring-1 focus:ring-indigo-500 appearance-none"
                 >
                   <option value="all">All Genres</option>
                   <option value="Afrobeats">Afrobeats</option>
@@ -366,11 +383,11 @@ export default function Discover() {
               </div>
 
               <div>
-                <label className="label">Country</label>
+                <label className="text-xs font-bold text-gray-400 mb-2 block">Origin Market</label>
                 <select
                   value={filters.country}
                   onChange={(e) => setFilters({...filters, country: e.target.value})}
-                  className="input w-full"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:ring-1 focus:ring-indigo-500 appearance-none"
                 >
                   <option value="all">All Countries</option>
                   <option value="Nigeria">Nigeria</option>
@@ -382,11 +399,11 @@ export default function Discover() {
               </div>
 
               <div>
-                <label className="label">Growth Rate</label>
+                <label className="text-xs font-bold text-gray-400 mb-2 block">Growth Velocity</label>
                 <select
                   value={filters.growthRate}
                   onChange={(e) => setFilters({...filters, growthRate: e.target.value})}
-                  className="input w-full"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:ring-1 focus:ring-indigo-500 appearance-none"
                 >
                   <option value="all">Any Growth</option>
                   <option value="0-50">0-50%</option>
@@ -443,39 +460,23 @@ export default function Discover() {
         )}
 
         {/* Quick Categories */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-gradient-to-r from-green-500 to-blue-500 rounded-lg p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold">Rising Stars</h3>
-                <p className="text-green-100">Artists on the rise</p>
-                <div className="text-2xl font-bold mt-2">{risingArtists.length}</div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          {[
+            { label: 'Rising Stars', desc: 'Velocity peaking', count: risingArtists.length, icon: TrendingUp, gradient: 'from-green-500/20 to-blue-500/20', border: 'border-green-500/20', color: 'text-green-400' },
+            { label: 'New Discoveries', desc: 'Fresh on radar', count: newArtists.length, icon: Star, gradient: 'from-purple-500/20 to-pink-500/20', border: 'border-purple-500/20', color: 'text-purple-400' },
+            { label: 'Total Matches', desc: 'Active candidates', count: filteredArtists.length, icon: Users, gradient: 'from-indigo-500/20 to-purple-500/20', border: 'border-indigo-500/20', color: 'text-indigo-400' }
+          ].map((cat, i) => (
+            <div key={i} className={`bg-gradient-to-br ${cat.gradient} backdrop-blur-xl border ${cat.border} rounded-3xl p-8 group hover:scale-[1.02] transition-all`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className={`text-xl font-black ${cat.color}`}>{cat.label}</h3>
+                  <p className="text-gray-400 font-medium mt-1">{cat.desc}</p>
+                  <div className="text-4xl font-black mt-4">{cat.count}</div>
+                </div>
+                <cat.icon className={`w-16 h-16 ${cat.color} opacity-20 group-hover:opacity-40 transition-opacity`} />
               </div>
-              <TrendingUp className="w-12 h-12 text-green-200" />
             </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold">New Discoveries</h3>
-                <p className="text-purple-100">Fresh talent</p>
-                <div className="text-2xl font-bold mt-2">{newArtists.length}</div>
-              </div>
-              <Star className="w-12 h-12 text-purple-200" />
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-lg p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold">Total Found</h3>
-                <p className="text-orange-100">Matching criteria</p>
-                <div className="text-2xl font-bold mt-2">{filteredArtists.length}</div>
-              </div>
-              <Users className="w-12 h-12 text-orange-200" />
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Rising Stars Section */}

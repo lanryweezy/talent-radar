@@ -11,8 +11,8 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', ...props }, ref) => {
     const variants = {
       default: 'bg-white border border-gray-200 shadow-sm',
-      glass: 'bg-white/10 backdrop-blur-lg border border-white/20 shadow-xl',
-      gradient: 'bg-gradient-to-br from-yellow-400 to-orange-500 border-0 shadow-xl'
+      glass: 'bg-white/[0.03] backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] hover:bg-white/[0.05] transition-all duration-300',
+      gradient: 'bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 backdrop-blur-2xl border border-white/10 shadow-2xl'
     }
 
     return (

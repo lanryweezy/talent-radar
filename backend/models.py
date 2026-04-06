@@ -26,6 +26,13 @@ class Artist(Base):
     trend_direction = Column(String, default="stable")  # up, down, stable
     genre_confidence = Column(Float, default=0.0)
     
+    # Label Management (CRM) fields
+    status = Column(String, default="available")  # signed, watching, contacted, available
+    is_watched = Column(Boolean, default=False)
+    notes = Column(Text)
+    signed_date = Column(DateTime)
+    contract_value = Column(Float)
+
     # Metadata
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

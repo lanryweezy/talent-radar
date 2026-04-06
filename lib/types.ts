@@ -12,6 +12,11 @@ export interface Artist {
   breakout_score: number;
   trend_direction: string;
   genre_confidence: number;
+  status: string;
+  is_watched: boolean;
+  notes: string | null;
+  signed_date: string | null;
+  contract_value: number | null;
   created_at: string;
   updated_at: string;
 }

@@ -42,6 +42,22 @@ export default function Dashboard() {
   const [selectedRegion, setSelectedRegion] = useState('global')
   const [aiPredictions, setAiPredictions] = useState<TrendingArtistItem[]>([])
   const [isLoadingPredictions, setIsLoadingPredictions] = useState(true)
+  const [pulseIndex, setPulseIndex] = useState(0)
+
+  const marketPulse = [
+    "🔥 Afrobeats surging in London (+45% streams)",
+    "🚀 New breakout detected in Lagos: Shallipopi",
+    "📈 Amapiano trending in 15 new regions this week",
+    "✨ AI Accuracy reached 96.4% on Latin market",
+    "🎵 Hip-Hop remains dominant in US Gen-Z demographics"
+  ]
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPulseIndex((prev) => (prev + 1) % marketPulse.length)
+    }, 4000)
+    return () => clearInterval(timer)
+  }, [])
 
   // Mock user data
   const mockUser = {
@@ -127,35 +143,71 @@ export default function Dashboard() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
+    <div className="min-h-screen bg-[#020617] text-white selection:bg-indigo-500/30">
+      {/* Background Glows */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full" />
+      </div>
+
       {/* Navigation */}
       <Navigation user={mockUser} />
 
+      {/* Market Pulse Ticker */}
+      <div className="bg-white/5 border-b border-white/10 backdrop-blur-md sticky top-[72px] z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+          <div className="flex items-center space-x-4">
+            <span className="flex items-center text-[10px] font-bold uppercase tracking-widest text-indigo-400">
+              <span className="relative flex h-2 w-2 mr-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+              </span>
+              Market Pulse
+            </span>
+            <div className="overflow-hidden h-5 flex-1 relative">
+              <motion.p
+                key={pulseIndex}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -20, opacity: 0 }}
+                className="text-xs font-medium text-gray-300 absolute inset-0"
+              >
+                {marketPulse[pulseIndex]}
+              </motion.p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-12 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0"
+            className="flex flex-col sm:flex-row items-end sm:items-center justify-between space-y-6 sm:space-y-0"
           >
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                🌍 Global A&R Dashboard
+            <div className="w-full sm:w-auto">
+              <div className="flex items-center space-x-2 mb-2">
+                <Badge variant="outline" className="bg-white/5 border-white/10 text-indigo-400 font-mono tracking-wider">PRO ACCESS</Badge>
+                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">v2.0.4</span>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-black text-white mb-4 tracking-tight leading-[0.9]">
+                Market <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Intelligence.</span>
               </h1>
-              <p className="text-gray-400 text-lg">
-                Discover emerging talent from around the world • Real-time insights • AI-powered predictions
+              <p className="text-gray-400 text-xl font-medium max-w-xl">
+                Unified dashboard for global discovery and AI-driven growth analytics.
               </p>
             </div>
             
-            <div className="flex items-center space-x-3">
-              <Badge variant="gradient" className="text-sm">
-                <Sparkles className="w-4 h-4 mr-2" />
-                Live Data
-              </Badge>
-              <Button variant="gradient">
-                <Star className="w-4 h-4 mr-2" />
-                Discover Talent
+            <div className="flex items-center space-x-4 bg-white/[0.03] backdrop-blur-xl border border-white/10 p-2 rounded-2xl shadow-2xl">
+              <Button variant="secondary" className="px-6 py-6 text-sm font-bold border border-white/10">
+                <Filter className="w-4 h-4 mr-2" />
+                Custom Filters
+              </Button>
+              <Button variant="gradient" className="px-8 py-6 text-sm font-bold">
+                <Rocket className="w-4 h-4 mr-2" />
+                Explore Markets
               </Button>
             </div>
           </motion.div>

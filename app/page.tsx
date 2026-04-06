@@ -73,46 +73,17 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          animate={{
-            x: [0, 100, 0],
-            y: [0, -100, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-          className="absolute top-20 left-10 w-20 h-20 bg-yellow-400 rounded-full opacity-10"
-        />
-        <motion.div
-          animate={{
-            x: [0, -50, 0],
-            y: [0, 100, 0],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-          className="absolute top-40 right-20 w-16 h-16 bg-pink-400 rounded-full opacity-10"
-        />
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 180, 360],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-          className="absolute bottom-20 left-1/4 w-12 h-12 bg-green-400 rounded-full opacity-10"
-        />
+    <div className="min-h-screen bg-[#020617] relative overflow-hidden selection:bg-indigo-500/30 selection:text-indigo-200">
+      {/* Mesh Gradient Background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/20 blur-[120px] animate-pulse" />
+        <div className="absolute top-[20%] right-[-5%] w-[35%] h-[35%] rounded-full bg-purple-600/20 blur-[100px] animate-pulse delay-700" />
+        <div className="absolute bottom-[-10%] left-[20%] w-[45%] h-[45%] rounded-full bg-blue-600/10 blur-[150px] animate-pulse delay-1000" />
       </div>
+
+      {/* Grid Pattern */}
+      <div className="absolute inset-0 z-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] pointer-events-none" />
+      <div className="absolute inset-0 z-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:100px_100px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
 
       {/* Hero Section */}
       <div className="relative">
@@ -147,12 +118,12 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="text-4xl md:text-7xl font-bold text-white mb-6 leading-tight"
+              className="text-5xl md:text-8xl font-black text-white mb-8 tracking-tighter leading-[0.9]"
             >
-              The World's First
+              Discover the
               <br />
-              <span className="bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 bg-clip-text text-transparent animate-gradient">
-                Global A&R Network
+              <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent italic">
+                Unheard.
               </span>
             </motion.h1>
 
@@ -215,26 +186,26 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.0 }}
-              className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-16"
+              className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-24"
             >
               <Button
                 variant="glow"
                 size="lg"
                 onClick={() => setShowWaitlistModal(true)}
-                className="w-full sm:w-auto shadow-2xl"
+                className="w-full sm:w-auto px-10 py-8 text-xl"
               >
-                <Video className="w-5 h-5 mr-2" />
+                <Video className="w-6 h-6 mr-3" />
                 Watch Demo
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <ArrowRight className="w-6 h-6 ml-3" />
               </Button>
               <Link href="/dashboard">
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full sm:w-auto border-2 border-white text-white hover:bg-white hover:text-gray-900"
+                  className="w-full sm:w-auto px-10 py-8 text-xl"
                 >
-                  <Play className="w-5 h-5 mr-2" />
-                  Try Live Demo
+                  <Play className="w-6 h-6 mr-3" />
+                  Enter App
                 </Button>
               </Link>
             </motion.div>
@@ -248,26 +219,27 @@ export default function Home() {
               <Card variant="glass" className="max-w-4xl mx-auto">
                 <CardContent className="pt-8 pb-8">
                   <h3 className="text-2xl font-bold text-white mb-6">Choose Your Region</h3>
-                  <div className="flex flex-wrap justify-center gap-3 mb-6">
+                  <div className="flex flex-wrap justify-center gap-4 mb-10">
                     {[
-                      { key: 'global', label: '🌍 Global', flag: '🌍' },
-                      { key: 'africa', label: '🌍 Africa', flag: '🇳🇬' },
-                      { key: 'asia', label: '🌏 Asia', flag: '🇨🇳' },
-                      { key: 'americas', label: '🌎 Americas', flag: '🇺🇸' },
-                      { key: 'europe', label: '🌍 Europe', flag: '🇬🇧' }
+                      { key: 'global', label: 'Global', flag: '🌍' },
+                      { key: 'africa', label: 'Africa', flag: '🇳🇬' },
+                      { key: 'asia', label: 'Asia', flag: '🇨🇳' },
+                      { key: 'americas', label: 'Americas', flag: '🇺🇸' },
+                      { key: 'europe', label: 'Europe', flag: '🇬🇧' }
                     ].map(region => (
                       <motion.button
                         key={region.key}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setSelectedRegion(region.key)}
-                        className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                        className={`px-8 py-4 rounded-2xl font-bold transition-all duration-300 flex items-center space-x-2 ${
                           selectedRegion === region.key
-                            ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black shadow-lg'
-                            : 'bg-white bg-opacity-20 text-white hover:bg-opacity-30'
+                            ? 'bg-white text-black shadow-[0_0_40px_rgba(255,255,255,0.2)]'
+                            : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'
                         }`}
                       >
-                        {region.label}
+                        <span>{region.flag}</span>
+                        <span>{region.label}</span>
                       </motion.button>
                     ))}
                   </div>

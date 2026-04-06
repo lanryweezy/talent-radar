@@ -8,16 +8,16 @@ import os
 from dotenv import load_dotenv
 
 try:
-    from database import engine
+    from database import engine, get_db
     from models import Base, Artist, Track, Metrics
-    from schemas import ArtistResponse, TrackResponse, SearchQuery, TrendingResponse
+    from schemas import ArtistResponse, TrackResponse, SearchQuery, TrendingResponse, ArtistStatusUpdate
     from services.spotify_service import SpotifyService
     from services.analytics_service import AnalyticsService
     from services.ai_service import AIService
 except ImportError:
-    from .database import engine
+    from .database import engine, get_db
     from .models import Base, Artist, Track, Metrics
-    from .schemas import ArtistResponse, TrackResponse, SearchQuery, TrendingResponse
+    from .schemas import ArtistResponse, TrackResponse, SearchQuery, TrendingResponse, ArtistStatusUpdate
     from .services.spotify_service import SpotifyService
     from .services.analytics_service import AnalyticsService
     from .services.ai_service import AIService
@@ -182,6 +182,58 @@ async def discover_similar_artists(artist_id: str, limit: int = 10):
         return {"similar_artists": similar_artists}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Discovery failed: {str(e)}")
+
+# CRM Endpoints
+@app.get("/crm/artists", response_model=List[ArtistResponse])
+async def get_label_artists(
+    status: Optional[str] = None,
+    is_watched: Optional[bool] = None,
+    db = Depends(get_db)
+):
+    """List artists tracked by the label with optional filtering"""
+    query = db.query(Artist)
+    if status:
+        query = query.filter(Artist.status == status)
+    if is_watched is not None:
+        query = query.filter(Artist.is_watched == is_watched)
+
+    return query.all()
+
+@app.patch("/crm/artists/{artist_id}", response_model=ArtistResponse)
+async def update_artist_status(
+    artist_id: str,
+    update_data: ArtistStatusUpdate,
+    db = Depends(get_db)
+):
+    """Update artist status, notes, or watchlist status"""
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+
+    # If artist doesn't exist in DB yet (e.g. from a fresh search), create it first
+    if not artist:
+        artist_details = await spotify_service.get_artist_details(artist_id)
+        if not artist_details:
+            raise HTTPException(status_code=404, detail="Artist not found")
+
+        ai_insights = await ai_service.analyze_artist(artist_details)
+        artist = Artist(
+            **artist_details,
+            **ai_insights
+        )
+        db.add(artist)
+        db.flush()
+
+    # Update fields
+    for field, value in update_data.model_dump(exclude_unset=True).items():
+        setattr(artist, field, value)
+
+    db.commit()
+    db.refresh(artist)
+    return artist
+
+@app.get("/crm/watchlist", response_model=List[ArtistResponse])
+async def get_watchlist(db = Depends(get_db)):
+    """Get list of artists in the watchlist"""
+    return db.query(Artist).filter(Artist.is_watched == True).all()
 
 if __name__ == "__main__":
     uvicorn.run(

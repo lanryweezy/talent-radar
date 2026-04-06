@@ -64,9 +64,9 @@ export default function Navigation({ user }: NavigationProps) {
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled 
-            ? 'bg-gray-900/95 backdrop-blur-lg border-b border-gray-800/50 shadow-xl' 
+            ? 'bg-black/40 backdrop-blur-2xl border-b border-white/5 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]'
             : 'bg-transparent'
         }`}
       >
@@ -77,42 +77,39 @@ export default function Navigation({ user }: NavigationProps) {
               <motion.div
                 whileHover={{ scale: 1.05, rotate: 5 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg"
+                className="w-10 h-10 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.5)]"
               >
-                <Zap className="w-6 h-6 text-white" />
+                <Zap className="w-6 h-6 text-white fill-current" />
               </motion.div>
-              <span className="text-xl font-bold text-white group-hover:text-yellow-400 transition-colors">
-                TalentRadar
+              <span className="text-2xl font-black text-white tracking-tighter transition-colors">
+                TALENT<span className="text-indigo-400">RADAR</span>
               </span>
-              <Badge variant="gradient" className="hidden sm:inline-flex text-xs">
-                <Sparkles className="w-3 h-3 mr-1" />
-                Global
-              </Badge>
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-1">
+            <div className="hidden md:flex items-center bg-white/[0.03] backdrop-blur-md border border-white/10 p-1 rounded-2xl">
               {navigationItems.map((item) => {
                 const Icon = item.icon
                 return (
                   <Link key={item.href} href={item.href}>
                     <motion.div
-                      whileHover={{ y: -2 }}
-                      whileTap={{ y: 0 }}
-                      className={`relative px-4 py-2 rounded-xl transition-all duration-200 flex items-center space-x-2 ${
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`relative px-6 py-2 rounded-xl transition-all duration-300 flex items-center space-x-2 text-sm font-bold tracking-tight ${
                         isActive(item.href)
-                          ? 'bg-gradient-to-r from-yellow-400/20 to-orange-500/20 text-yellow-400'
-                          : 'text-gray-300 hover:text-white hover:bg-white/10'
+                          ? 'text-white'
+                          : 'text-gray-400 hover:text-gray-200'
                       }`}
                     >
-                      <Icon className="w-4 h-4" />
-                      <span className="font-medium">{item.label}</span>
                       {isActive(item.href) && (
                         <motion.div
-                          layoutId="activeTab"
-                          className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10 rounded-xl border border-yellow-400/30"
+                          layoutId="activeNavTab"
+                          className="absolute inset-0 bg-white/10 rounded-xl border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)]"
+                          transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                         />
                       )}
+                      <Icon className={`w-4 h-4 ${isActive(item.href) ? 'text-indigo-400' : ''}`} />
+                      <span className="relative z-10">{item.label}</span>
                     </motion.div>
                   </Link>
                 )

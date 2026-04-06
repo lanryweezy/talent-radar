@@ -1,28 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Users, Search, Filter, Download, Plus, TrendingUp, Star, Music, Globe } from 'lucide-react'
+import { Users, Search, Filter, Download, Plus, TrendingUp, Star, Music, Globe, Save, Calendar, Sparkles } from 'lucide-react'
 import Link from 'next/link'
-import ArtistCard from '@/components/ArtistCard'
-
-interface Artist {
-  id: string
-  name: string
-  image: string
-  genre: string
-  country: string
-  followers: number
-  monthlyListeners: number
-  growthRate: number
-  breakoutScore: number
-  platforms: string[]
-  topTrack: string
-  recentActivity: string
-  status: 'signed' | 'watching' | 'contacted' | 'available'
-  signedDate?: string
-  contractValue?: number
-  notes: string
-}
+import { Button } from '@/components/ui/Button'
+import { Badge } from '@/components/ui/Badge'
+import { Artist } from '@/lib/types'
+import { getCRMArtists, updateArtistStatus } from '@/lib/api'
 
 export default function Artists() {
   const [artists, setArtists] = useState<Artist[]>([])
@@ -33,99 +17,18 @@ export default function Artists() {
   const [sortBy, setSortBy] = useState('breakoutScore')
 
   useEffect(() => {
-    // Mock artists data with different statuses
-    const mockArtists: Artist[] = [
-      {
-        id: '1',
-        name: 'Tems',
-        image: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=400',
-        genre: 'Afrobeats',
-        country: 'Nigeria',
-        followers: 3400000,
-        monthlyListeners: 8900000,
-        growthRate: 234.5,
-        breakoutScore: 98.7,
-        platforms: ['Spotify', 'Apple Music', 'YouTube Music', 'Audiomack'],
-        topTrack: 'Free Mind',
-        recentActivity: 'Grammy nomination',
-        status: 'signed',
-        signedDate: '2023-06-15',
-        contractValue: 2500000,
-        notes: 'Exceptional talent with global appeal. Grammy-nominated artist with strong international presence.'
-      },
-      {
-        id: '2',
-        name: 'Shallipopi',
-        image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
-        genre: 'Afrobeats',
-        country: 'Nigeria',
-        followers: 780000,
-        monthlyListeners: 1600000,
-        growthRate: 245.6,
-        breakoutScore: 85.7,
-        platforms: ['Spotify', 'Audiomack', 'Boomplay'],
-        topTrack: 'Elon Musk',
-        recentActivity: 'Breakthrough single',
-        status: 'watching',
-        notes: 'Rising star with viral potential. Strong street credibility and growing fanbase.'
-      },
-      {
-        id: '3',
-        name: 'Victony',
-        image: 'https://images.unsplash.com/photo-1494790108755-2616c9c0b8d3?w=400',
-        genre: 'Afrobeats',
-        country: 'Nigeria',
-        followers: 890000,
-        monthlyListeners: 1900000,
-        growthRate: 234.1,
-        breakoutScore: 87.9,
-        platforms: ['Spotify', 'Apple Music', 'Audiomack'],
-        topTrack: 'Holy Father',
-        recentActivity: 'Collaboration surge',
-        status: 'contacted',
-        notes: 'Versatile artist with strong collaboration network. Initial contact made through management.'
-      },
-      {
-        id: '4',
-        name: 'Young Jonn',
-        image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400',
-        genre: 'Afrobeats',
-        country: 'Nigeria',
-        followers: 650000,
-        monthlyListeners: 1400000,
-        growthRate: 167.8,
-        breakoutScore: 82.1,
-        platforms: ['Spotify', 'Apple Music', 'Boomplay'],
-        topTrack: 'Dada',
-        recentActivity: 'Producer turned artist',
-        status: 'available',
-        notes: 'Talented producer-artist with proven hit-making ability. Open to label discussions.'
-      },
-      {
-        id: '5',
-        name: 'Ayra Starr',
-        image: 'https://images.unsplash.com/photo-1494790108755-2616c9c0b8d3?w=400',
-        genre: 'Afrobeats',
-        country: 'Nigeria',
-        followers: 2100000,
-        monthlyListeners: 4500000,
-        growthRate: 198.2,
-        breakoutScore: 91.8,
-        platforms: ['Spotify', 'Apple Music', 'Boomplay', 'Audiomack'],
-        topTrack: 'Rush',
-        recentActivity: 'International tour announced',
-        status: 'signed',
-        signedDate: '2023-03-20',
-        contractValue: 1800000,
-        notes: 'Young superstar with massive potential. Already showing international crossover appeal.'
+    const fetchArtists = async () => {
+      try {
+        const data = await getCRMArtists()
+        setArtists(data)
+        setFilteredArtists(data)
+      } catch (error) {
+        console.error('Failed to fetch artists:', error)
+      } finally {
+        setIsLoading(false)
       }
-    ]
-
-    setTimeout(() => {
-      setArtists(mockArtists)
-      setFilteredArtists(mockArtists)
-      setIsLoading(false)
-    }, 1000)
+    }
+    fetchArtists()
   }, [])
 
   // Filter and search logic
@@ -135,8 +38,7 @@ export default function Artists() {
     if (searchQuery) {
       filtered = filtered.filter(artist =>
         artist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        artist.genre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        artist.country.toLowerCase().includes(searchQuery.toLowerCase())
+        artist.genres.some(g => g.toLowerCase().includes(searchQuery.toLowerCase()))
       )
     }
 
@@ -148,9 +50,7 @@ export default function Artists() {
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'breakoutScore':
-          return b.breakoutScore - a.breakoutScore
-        case 'growthRate':
-          return b.growthRate - a.growthRate
+          return b.breakout_score - a.breakout_score
         case 'followers':
           return b.followers - a.followers
         case 'name':
@@ -176,6 +76,24 @@ export default function Artists() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(num)
+  }
+
+  const handleUpdateStatus = async (artistId: string, status: string) => {
+    try {
+      const updated = await updateArtistStatus(artistId, { status })
+      setArtists(prev => prev.map(a => a.id === artistId ? updated : a))
+    } catch (error) {
+      console.error('Failed to update status:', error)
+    }
+  }
+
+  const handleUpdateNotes = async (artistId: string, notes: string) => {
+    try {
+      const updated = await updateArtistStatus(artistId, { notes })
+      setArtists(prev => prev.map(a => a.id === artistId ? updated : a))
+    } catch (error) {
+      console.error('Failed to update notes:', error)
+    }
   }
 
   const getStatusColor = (status: string) => {
@@ -217,104 +135,77 @@ export default function Artists() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#020617] text-white selection:bg-indigo-500/30">
+      {/* Background Glows */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full" />
+      </div>
+
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
+      <div className="relative z-10 border-b border-white/10 bg-black/20 backdrop-blur-md pt-20 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-end justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                <Users className="w-8 h-8 mr-3 text-blue-600" />
-                Artist Management
+              <div className="flex items-center space-x-2 mb-2">
+                <Badge variant="outline" className="bg-indigo-500/10 border-indigo-500/20 text-indigo-400">LABEL CRM</Badge>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-[0.9]">
+                Artist <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Management.</span>
               </h1>
-              <p className="text-gray-600 mt-1">Manage your artist roster and track their progress</p>
+              <p className="text-gray-400 mt-4 text-xl font-medium max-w-xl">
+                Manage your artist roster, track contracts, and store A&R intelligence.
+              </p>
             </div>
-            <div className="flex items-center space-x-4">
-              <button className="btn btn-outline">
+            <div className="flex items-center space-x-4 w-full md:w-auto">
+              <Button variant="outline" className="flex-1 md:flex-none py-6 px-8">
                 <Download className="w-4 h-4 mr-2" />
-                Export
-              </button>
-              <button className="btn btn-primary">
+                Export Data
+              </Button>
+              <Button variant="gradient" className="flex-1 md:flex-none py-6 px-8">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Artist
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="card">
-            <div className="card-body">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+          {[
+            { label: 'Signed', count: statusCounts.signed, icon: Star, color: 'text-green-400', bg: 'bg-green-400/10' },
+            { label: 'Watching', count: statusCounts.watching, icon: TrendingUp, color: 'text-blue-400', bg: 'bg-blue-400/10' },
+            { label: 'Contacted', count: statusCounts.contacted, icon: Music, color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
+            { label: 'Available', count: statusCounts.available, icon: Users, color: 'text-purple-400', bg: 'bg-purple-400/10' }
+          ].map((stat) => (
+            <div key={stat.label} className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/[0.05] transition-all">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Signed Artists</p>
-                  <p className="text-2xl font-bold text-green-600">{statusCounts.signed}</p>
+                  <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">{stat.label}</p>
+                  <p className="text-3xl font-black mt-1">{stat.count}</p>
                 </div>
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Star className="w-6 h-6 text-green-600" />
+                <div className={`w-12 h-12 ${stat.bg} rounded-xl flex items-center justify-center`}>
+                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="card">
-            <div className="card-body">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Watching</p>
-                  <p className="text-2xl font-bold text-blue-600">{statusCounts.watching}</p>
-                </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-blue-600" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="card-body">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Contacted</p>
-                  <p className="text-2xl font-bold text-yellow-600">{statusCounts.contacted}</p>
-                </div>
-                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                  <Music className="w-6 h-6 text-yellow-600" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="card-body">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Available</p>
-                  <p className="text-2xl font-bold text-gray-600">{statusCounts.available}</p>
-                </div>
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <Users className="w-6 h-6 text-gray-600" />
-                </div>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="md:col-span-2">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search artists..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Search your roster by name or genre..."
+                  className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                 />
               </div>
             </div>
@@ -322,7 +213,7 @@ export default function Artists() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="input w-full"
+                className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer"
               >
                 <option value="all">All Status</option>
                 <option value="signed">Signed</option>
@@ -357,93 +248,118 @@ export default function Artists() {
         </div>
 
         {/* Artists List */}
-        <div className="space-y-6">
+        <div className="space-y-8">
           {filteredArtists.map(artist => (
-            <div key={artist.id} className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-start space-x-6">
-                <img
-                  src={artist.image}
-                  alt={artist.name}
-                  className="w-20 h-20 rounded-lg object-cover"
-                />
+            <div key={artist.id} className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/[0.05] transition-all group">
+              <div className="flex flex-col md:flex-row items-start gap-8">
+                <div className="relative">
+                  <img
+                    src={artist.image_url || '/placeholder-artist.png'}
+                    alt={artist.name}
+                    className="w-32 h-32 rounded-2xl object-cover shadow-2xl"
+                  />
+                  {artist.is_watched && (
+                    <div className="absolute -top-2 -right-2 bg-yellow-400 p-1.5 rounded-lg shadow-lg">
+                      <Star className="w-4 h-4 text-black fill-current" />
+                    </div>
+                  )}
+                </div>
                 
-                <div className="flex-1">
-                  <div className="flex items-start justify-between">
+                <div className="flex-1 w-full">
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                     <div>
-                      <div className="flex items-center space-x-3">
+                      <div className="flex flex-wrap items-center gap-3">
                         <Link href={`/artist/${artist.id}`}>
-                          <h3 className="text-xl font-bold text-gray-900 hover:text-blue-600 cursor-pointer">
+                          <h3 className="text-3xl font-black text-white hover:text-indigo-400 transition-colors">
                             {artist.name}
                           </h3>
                         </Link>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(artist.status)}`}>
-                          {artist.status.charAt(0).toUpperCase() + artist.status.slice(1)}
-                        </span>
+                        <select
+                          value={artist.status}
+                          onChange={(e) => handleUpdateStatus(artist.id, e.target.value)}
+                          className={`px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest border-none cursor-pointer ${
+                            artist.status === 'signed' ? 'bg-green-500/20 text-green-400' :
+                            artist.status === 'watching' ? 'bg-blue-500/20 text-blue-400' :
+                            artist.status === 'contacted' ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-white/10 text-gray-400'
+                          }`}
+                        >
+                          <option value="signed">Signed</option>
+                          <option value="watching">Watching</option>
+                          <option value="contacted">Contacted</option>
+                          <option value="available">Available</option>
+                        </select>
                       </div>
-                      <p className="text-gray-600 flex items-center mt-1">
-                        <Music className="w-4 h-4 mr-1" />
-                        {artist.genre} • 
-                        <Globe className="w-4 h-4 ml-2 mr-1" />
-                        {artist.country}
+                      <p className="text-gray-400 font-medium flex items-center mt-2">
+                        <Music className="w-4 h-4 mr-2 text-indigo-400" />
+                        {artist.genres.join(', ')}
                       </p>
-                      {artist.status === 'signed' && artist.signedDate && (
-                        <p className="text-sm text-green-600 mt-1">
-                          Signed: {new Date(artist.signedDate).toLocaleDateString()}
-                          {artist.contractValue && ` • ${formatCurrency(artist.contractValue)}`}
-                        </p>
+                      {artist.status === 'signed' && artist.signed_date && (
+                        <div className="flex items-center space-x-4 mt-2">
+                          <p className="text-sm font-bold text-green-400 flex items-center">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            Signed {new Date(artist.signed_date).toLocaleDateString()}
+                          </p>
+                          {artist.contract_value && (
+                            <p className="text-sm font-bold text-indigo-400">
+                              {formatCurrency(artist.contract_value)} Contract
+                            </p>
+                          )}
+                        </div>
                       )}
                     </div>
                     
-                    <div className="flex items-center space-x-3">
-                      <div className="text-right">
-                        <div className="text-lg font-bold">{artist.breakoutScore}/100</div>
-                        <div className="text-sm text-gray-600">Breakout Score</div>
+                    <div className="flex flex-row sm:flex-col items-center sm:items-end gap-4">
+                      <div className="text-center sm:text-right">
+                        <div className="text-3xl font-black bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                          {artist.breakout_score.toFixed(1)}
+                        </div>
+                        <div className="text-[10px] font-black uppercase tracking-widest text-gray-500">Breakout Score</div>
                       </div>
-                      <button className="btn btn-outline btn-sm">
-                        Edit
-                      </button>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-8 border-y border-white/5 py-6">
                     <div>
-                      <div className="text-sm text-gray-600">Followers</div>
-                      <div className="font-semibold">{formatNumber(artist.followers)}</div>
+                      <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Followers</div>
+                      <div className="text-xl font-bold">{formatNumber(artist.followers)}</div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-600">Monthly Listeners</div>
-                      <div className="font-semibold">{formatNumber(artist.monthlyListeners)}</div>
+                      <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Popularity</div>
+                      <div className="text-xl font-bold">{artist.popularity}</div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-600">Growth Rate</div>
-                      <div className="font-semibold text-green-600">+{artist.growthRate}%</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600">Top Track</div>
-                      <div className="font-semibold">{artist.topTrack}</div>
+                      <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Market Trend</div>
+                      <div className={`text-xl font-bold flex items-center ${artist.trend_direction === 'up' ? 'text-green-400' : 'text-gray-400'}`}>
+                        {artist.trend_direction === 'up' && <TrendingUp className="w-5 h-5 mr-2" />}
+                        {artist.trend_direction.toUpperCase()}
+                      </div>
                     </div>
                   </div>
                   
-                  {artist.notes && (
-                    <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                      <div className="text-sm text-gray-700">{artist.notes}</div>
-                    </div>
-                  )}
+                  <div className="mt-8 flex flex-col space-y-3">
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center">
+                      <Sparkles className="w-3 h-3 mr-2 text-indigo-400" />
+                      A&R Intelligence
+                    </label>
+                    <textarea
+                      defaultValue={artist.notes || ''}
+                      onBlur={(e) => handleUpdateNotes(artist.id, e.target.value)}
+                      placeholder="Enter private label intelligence, meeting notes, or scout observations..."
+                      className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl text-sm text-gray-300 placeholder-gray-600 focus:ring-1 focus:ring-indigo-500 transition-all resize-none"
+                      rows={2}
+                    />
+                  </div>
                   
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                    <div className="flex items-center space-x-2 text-sm text-gray-600">
-                      <span>Recent: {artist.recentActivity}</span>
+                  <div className="flex flex-col sm:flex-row items-center justify-between mt-8 pt-6 border-t border-white/5 gap-4">
+                    <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                      Scouted {new Date(artist.created_at).toLocaleDateString()}
                     </div>
-                    <div className="flex items-center space-x-2">
-                      {artist.status !== 'signed' && (
-                        <button className="btn btn-primary btn-sm">
-                          Sign Artist
-                        </button>
-                      )}
-                      <Link href={`/artist/${artist.id}`}>
-                        <button className="btn btn-outline btn-sm">
-                          View Details
-                        </button>
+                    <div className="flex items-center space-x-3 w-full sm:w-auto">
+                      <Link href={`/artist/${artist.id}`} className="flex-1 sm:flex-none">
+                        <Button variant="outline" className="w-full text-xs font-bold uppercase tracking-widest py-5">
+                          View Full Deep Dive
+                        </Button>
                       </Link>
                     </div>
                   </div>

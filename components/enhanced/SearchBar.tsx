@@ -19,9 +19,10 @@ import {
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Card, CardContent } from '@/components/ui/Card'
-import { searchArtists } from '@/lib/api'
+import { searchArtists, updateArtistStatus } from '@/lib/api'
 import { Artist } from '@/lib/types'
 import { formatNumber } from '@/lib/utils'
+import { Plus, Check, Star } from 'lucide-react'
 
 interface SearchResult {
   id: string
@@ -316,7 +317,6 @@ export default function SearchBar({
                           <motion.div
                             key={result.id}
                             whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
-                            onClick={() => onResultSelect?.(result)}
                             className="flex items-center space-x-4 p-4 cursor-pointer border-b border-white/10 last:border-b-0"
                           >
                             <div className="w-10 h-10 bg-gradient-to-r from-yellow-400/20 to-orange-500/20 rounded-lg flex items-center justify-center">
@@ -327,7 +327,7 @@ export default function SearchBar({
                               )}
                             </div>
 
-                            <div className="flex-1">
+                            <div className="flex-1" onClick={() => onResultSelect?.(result)}>
                               <div className="flex items-center space-x-2">
                                 <span className="text-white font-medium">{result.title}</span>
                                 {result.verified && (
@@ -354,8 +354,42 @@ export default function SearchBar({
                               </div>
                             </div>
 
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 hover:bg-yellow-400/20 text-yellow-400"
+                                onClick={async (e) => {
+                                  e.stopPropagation()
+                                  try {
+                                    await updateArtistStatus(result.id, { is_watched: true })
+                                    // Could add a toast here
+                                  } catch (error) {
+                                    console.error('Failed to add to watchlist:', error)
+                                  }
+                                }}
+                              >
+                                <Star className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 hover:bg-blue-400/20 text-blue-400"
+                                onClick={async (e) => {
+                                  e.stopPropagation()
+                                  try {
+                                    await updateArtistStatus(result.id, { status: 'watching' })
+                                  } catch (error) {
+                                    console.error('Failed to track artist:', error)
+                                  }
+                                }}
+                              >
+                                <Plus className="w-4 h-4" />
+                              </Button>
+                            </div>
+
                             {result.growth !== undefined && (
-                              <div className="text-right">
+                              <div className="text-right min-w-[60px]" onClick={() => onResultSelect?.(result)}>
                                 <div className="text-green-400 font-bold text-sm">
                                   {result.growth}%
                                 </div>

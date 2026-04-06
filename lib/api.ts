@@ -18,6 +18,35 @@ export async function searchArtists(query: string, limit: number = 20): Promise<
   return response.json();
 }
 
+export async function getCRMArtists(status?: string, isWatched?: boolean): Promise<Artist[]> {
+  const params = new URLSearchParams();
+  if (status) params.append('status', status);
+  if (isWatched !== undefined) params.append('is_watched', isWatched.toString());
+
+  const response = await fetch(`${API_URL}/crm/artists?${params.toString()}`);
+  if (!response.ok) throw new Error('Failed to get label artists');
+  return response.json();
+}
+
+export async function updateArtistStatus(artistId: string, update: Partial<Artist>): Promise<Artist> {
+  const response = await fetch(`${API_URL}/crm/artists/${artistId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(update),
+  });
+
+  if (!response.ok) throw new Error('Failed to update artist status');
+  return response.json();
+}
+
+export async function getWatchlist(): Promise<Artist[]> {
+  const response = await fetch(`${API_URL}/crm/watchlist`);
+  if (!response.ok) throw new Error('Failed to get watchlist');
+  return response.json();
+}
+
 export async function getArtistDetails(artistId: string): Promise<Artist> {
   const response = await fetch(`${API_URL}/artists/${artistId}`);
 

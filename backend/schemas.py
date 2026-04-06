@@ -27,6 +27,13 @@ class ArtistResponse(BaseModel):
     trend_direction: str
     genre_confidence: float
     
+    # Label Management (CRM) fields
+    status: Optional[str] = "available"
+    is_watched: Optional[bool] = False
+    notes: Optional[str] = None
+    signed_date: Optional[datetime] = None
+    contract_value: Optional[float] = None
+
     # Metadata
     created_at: datetime
     updated_at: datetime
@@ -150,6 +157,13 @@ class CollaborationNetwork(BaseModel):
     cluster_info: Dict[str, Any]
 
 # Request schemas
+class ArtistStatusUpdate(BaseModel):
+    status: Optional[str] = None
+    is_watched: Optional[bool] = None
+    notes: Optional[str] = None
+    signed_date: Optional[datetime] = None
+    contract_value: Optional[float] = None
+
 class CreateAlertRequest(BaseModel):
     artist_id: str
     alert_type: str
