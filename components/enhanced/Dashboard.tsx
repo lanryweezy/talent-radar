@@ -23,7 +23,8 @@ import {
   Sparkles,
   Target,
   Rocket,
-  Eye
+  Eye,
+  Loader2
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
@@ -33,18 +34,38 @@ import Navigation from '@/components/enhanced/Navigation'
 import SearchBar from '@/components/enhanced/SearchBar'
 import TrendingSection from '@/components/enhanced/TrendingSection'
 import ArtistCard from '@/components/enhanced/ArtistCard'
+import { getTrendingArtists } from '@/lib/api'
+import { TrendingArtistItem } from '@/lib/types'
 
 export default function Dashboard() {
   const [selectedTimeframe, setSelectedTimeframe] = useState('24h')
   const [selectedRegion, setSelectedRegion] = useState('global')
+  const [aiPredictions, setAiPredictions] = useState<TrendingArtistItem[]>([])
+  const [isLoadingPredictions, setIsLoadingPredictions] = useState(true)
 
   // Mock user data
   const mockUser = {
     name: 'Alex Johnson',
     email: 'alex@talentscout.com',
-    avatar: '/api/placeholder/40/40',
+    avatar: undefined,
     role: 'A&R Director'
   }
+
+  useEffect(() => {
+    async function fetchPredictions() {
+      setIsLoadingPredictions(true)
+      try {
+        // Using trending artists as a proxy for predictions for now
+        const data = await getTrendingArtists('global', undefined, 3)
+        setAiPredictions(data.trending_artists)
+      } catch (error) {
+        console.error('Failed to fetch predictions:', error)
+      } finally {
+        setIsLoadingPredictions(false)
+      }
+    }
+    fetchPredictions()
+  }, [])
 
   const stats = [
     {
@@ -244,58 +265,47 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[
-                    {
-                      artist: 'Ayra Starr',
-                      prediction: 'Breakout Potential',
-                      confidence: 94,
-                      timeframe: '3 months',
-                      avatar: '/api/placeholder/32/32'
-                    },
-                    {
-                      artist: 'Omah Lay',
-                      prediction: 'Global Crossover',
-                      confidence: 87,
-                      timeframe: '6 months',
-                      avatar: '/api/placeholder/32/32'
-                    },
-                    {
-                      artist: 'Fireboy DML',
-                      prediction: 'Chart Success',
-                      confidence: 91,
-                      timeframe: '2 months',
-                      avatar: '/api/placeholder/32/32'
-                    }
-                  ].map((prediction, index) => (
-                    <motion.div
-                      key={prediction.artist}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ scale: 1.02 }}
-                      className="p-4 bg-gradient-to-r from-white/5 to-white/10 rounded-xl border border-white/10 cursor-pointer"
-                    >
-                      <div className="flex items-center space-x-3 mb-3">
-                        <Avatar 
-                          src={prediction.avatar} 
-                          alt={prediction.artist} 
-                          fallback={prediction.artist.charAt(0)}
-                          size="sm"
-                        />
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-white">{prediction.artist}</h4>
-                          <p className="text-sm text-gray-400">{prediction.prediction}</p>
+                  {isLoadingPredictions ? (
+                    <div className="py-8 text-center text-gray-400">
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                      <span>Analyzing trends...</span>
+                    </div>
+                  ) : aiPredictions.length > 0 ? (
+                    aiPredictions.map((prediction, index) => (
+                      <motion.div
+                        key={prediction.artist.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        whileHover={{ scale: 1.02 }}
+                        className="p-4 bg-gradient-to-r from-white/5 to-white/10 rounded-xl border border-white/10 cursor-pointer"
+                      >
+                        <div className="flex items-center space-x-3 mb-3">
+                          <Avatar
+                            src={prediction.artist.image_url || undefined}
+                            alt={prediction.artist.name}
+                            fallback={prediction.artist.name.charAt(0)}
+                            size="sm"
+                          />
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-white">{prediction.artist.name}</h4>
+                            <p className="text-sm text-gray-400">{prediction.artist.genres[0] || 'Unknown Genre'}</p>
+                          </div>
+                          <Badge variant="gradient" className="text-xs">
+                            {Math.round(prediction.artist.breakout_score)}%
+                          </Badge>
                         </div>
-                        <Badge variant="gradient" className="text-xs">
-                          {prediction.confidence}%
-                        </Badge>
-                      </div>
-                      <div className="flex items-center space-x-2 text-xs text-gray-500">
-                        <Calendar className="w-3 h-3" />
-                        <span>Expected in {prediction.timeframe}</span>
-                      </div>
-                    </motion.div>
-                  ))}
+                        <div className="flex items-center space-x-2 text-xs text-gray-500">
+                          <Calendar className="w-3 h-3" />
+                          <span>Expected breakout soon</span>
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="py-8 text-center text-gray-400">
+                      <span>No predictions available</span>
+                    </div>
+                  )}
                 </div>
                 <div className="mt-4">
                   <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10">
