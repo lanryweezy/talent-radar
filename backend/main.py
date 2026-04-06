@@ -7,12 +7,20 @@ from typing import List, Optional
 import os
 from dotenv import load_dotenv
 
-from database import engine, Base
-from models import Artist, Track, Metrics
-from schemas import ArtistResponse, TrackResponse, SearchQuery, TrendingResponse
-from .services.spotify_service import SpotifyService
-from .services.analytics_service import AnalyticsService
-from .services.ai_service import AIService
+try:
+    from database import engine
+    from models import Base, Artist, Track, Metrics
+    from schemas import ArtistResponse, TrackResponse, SearchQuery, TrendingResponse
+    from services.spotify_service import SpotifyService
+    from services.analytics_service import AnalyticsService
+    from services.ai_service import AIService
+except ImportError:
+    from .database import engine
+    from .models import Base, Artist, Track, Metrics
+    from .schemas import ArtistResponse, TrackResponse, SearchQuery, TrendingResponse
+    from .services.spotify_service import SpotifyService
+    from .services.analytics_service import AnalyticsService
+    from .services.ai_service import AIService
 
 load_dotenv()
 
@@ -41,7 +49,7 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://talent-radar.vercel.app"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -19,37 +19,16 @@ import {
   Star,
   ArrowUpRight,
   Filter,
-  Calendar
+  Calendar,
+  Loader2
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Avatar } from '@/components/ui/Avatar'
-
-interface TrendingItem {
-  id: string
-  rank: number
-  previousRank?: number
-  artist: {
-    name: string
-    avatar: string
-    verified: boolean
-    location: string
-  }
-  track: {
-    title: string
-    duration: string
-    genre: string
-  }
-  metrics: {
-    streams: number
-    growth: number
-    velocity: number
-    countries: number
-  }
-  platforms: string[]
-  isPlaying?: boolean
-}
+import { getTrendingArtists } from '@/lib/api'
+import { TrendingArtistItem } from '@/lib/types'
+import { formatNumber } from '@/lib/utils'
 
 interface TrendingSectionProps {
   title?: string
@@ -71,124 +50,23 @@ export default function TrendingSection({
   const [playingId, setPlayingId] = useState<string | null>(null)
   const [likedItems, setLikedItems] = useState<Set<string>>(new Set())
   const [showAllRegions, setShowAllRegions] = useState(false)
+  const [trendingData, setTrendingData] = useState<TrendingArtistItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Mock trending data
-  const trendingData: TrendingItem[] = [
-    {
-      id: '1',
-      rank: 1,
-      previousRank: 3,
-      artist: {
-        name: 'Burna Boy',
-        avatar: '/api/placeholder/40/40',
-        verified: true,
-        location: 'Lagos, Nigeria'
-      },
-      track: {
-        title: 'City Boys',
-        duration: '3:24',
-        genre: 'Afrobeats'
-      },
-      metrics: {
-        streams: 2400000,
-        growth: 156,
-        velocity: 89,
-        countries: 45
-      },
-      platforms: ['Spotify', 'Apple Music', 'Boomplay', 'Audiomack']
-    },
-    {
-      id: '2',
-      rank: 2,
-      previousRank: 1,
-      artist: {
-        name: 'Tems',
-        avatar: '/api/placeholder/40/40',
-        verified: true,
-        location: 'Lagos, Nigeria'
-      },
-      track: {
-        title: 'Me & U',
-        duration: '2:58',
-        genre: 'Afro-R&B'
-      },
-      metrics: {
-        streams: 1800000,
-        growth: 78,
-        velocity: 92,
-        countries: 38
-      },
-      platforms: ['Spotify', 'Apple Music', 'YouTube Music']
-    },
-    {
-      id: '3',
-      rank: 3,
-      artist: {
-        name: 'Rema',
-        avatar: '/api/placeholder/40/40',
-        verified: true,
-        location: 'Benin City, Nigeria'
-      },
-      track: {
-        title: 'Holiday',
-        duration: '3:12',
-        genre: 'Afrobeats'
-      },
-      metrics: {
-        streams: 1600000,
-        growth: 234,
-        velocity: 95,
-        countries: 52
-      },
-      platforms: ['Spotify', 'Apple Music', 'Boomplay']
-    },
-    {
-      id: '4',
-      rank: 4,
-      previousRank: 8,
-      artist: {
-        name: 'Ayra Starr',
-        avatar: '/api/placeholder/40/40',
-        verified: true,
-        location: 'Lagos, Nigeria'
-      },
-      track: {
-        title: 'Rush',
-        duration: '3:06',
-        genre: 'Afrobeats'
-      },
-      metrics: {
-        streams: 1400000,
-        growth: 189,
-        velocity: 87,
-        countries: 41
-      },
-      platforms: ['Spotify', 'Apple Music', 'Audiomack']
-    },
-    {
-      id: '5',
-      rank: 5,
-      previousRank: 4,
-      artist: {
-        name: 'Wizkid',
-        avatar: '/api/placeholder/40/40',
-        verified: true,
-        location: 'Lagos, Nigeria'
-      },
-      track: {
-        title: 'Money & Love',
-        duration: '3:45',
-        genre: 'Afrobeats'
-      },
-      metrics: {
-        streams: 1200000,
-        growth: 45,
-        velocity: 76,
-        countries: 48
-      },
-      platforms: ['Spotify', 'Apple Music', 'Boomplay', 'YouTube Music']
+  useEffect(() => {
+    async function fetchData() {
+      setIsLoading(true)
+      try {
+        const data = await getTrendingArtists(selectedRegion, undefined, limit)
+        setTrendingData(data.trending_artists)
+      } catch (error) {
+        console.error('Failed to fetch trending artists:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
-  ]
+    fetchData()
+  }, [selectedRegion, limit])
 
   const timeframeOptions = [
     { value: '24h', label: 'Last 24 Hours' },
@@ -204,21 +82,6 @@ export default function TrendingSection({
     { value: 'asia', label: '🌏 Asia', flag: '🇨🇳' },
     { value: 'south-america', label: '🌎 South America', flag: '🇧🇷' }
   ]
-
-  const getRankChange = (current: number, previous?: number) => {
-    if (!previous) return null
-    const change = previous - current
-    return {
-      direction: change > 0 ? 'up' : change < 0 ? 'down' : 'same',
-      amount: Math.abs(change)
-    }
-  }
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
-    return num.toString()
-  }
 
   const togglePlay = (id: string) => {
     setPlayingId(playingId === id ? null : id)
@@ -316,173 +179,179 @@ export default function TrendingSection({
       {/* Trending List */}
       <Card variant="glass">
         <CardContent className="p-0">
-          <div className="space-y-0">
-            {trendingData.slice(0, limit).map((item, index) => {
-              const rankChange = getRankChange(item.rank, item.previousRank)
-              const isPlaying = playingId === item.id
-              const isLiked = likedItems.has(item.id)
+          <div className="space-y-0 min-h-[400px] flex flex-col">
+            {isLoading ? (
+              <div className="flex-1 flex flex-col items-center justify-center p-12 text-gray-400">
+                <Loader2 className="w-12 h-12 animate-spin mb-4 text-yellow-400" />
+                <p className="text-lg font-medium">Loading trending global talent...</p>
+              </div>
+            ) : trendingData.length > 0 ? (
+              trendingData.map((item, index) => {
+                const isPlaying = playingId === item.artist.id
+                const isLiked = likedItems.has(item.artist.id)
 
-              return (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
-                  className="flex items-center space-x-4 p-4 border-b border-white/10 last:border-b-0 group"
-                >
-                  {/* Rank */}
-                  <div className="flex items-center space-x-3 w-16">
-                    <div className="text-2xl font-bold text-white">
-                      {item.rank}
-                    </div>
-                    {rankChange && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className={`flex items-center ${
-                          rankChange.direction === 'up' ? 'text-green-400' : 
-                          rankChange.direction === 'down' ? 'text-red-400' : 'text-gray-400'
-                        }`}
-                      >
-                        {rankChange.direction === 'up' ? (
-                          <TrendingUp className="w-4 h-4" />
-                        ) : rankChange.direction === 'down' ? (
-                          <TrendingDown className="w-4 h-4" />
-                        ) : null}
-                        <span className="text-xs ml-1">{rankChange.amount}</span>
-                      </motion.div>
-                    )}
-                  </div>
-
-                  {/* Play Button */}
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => togglePlay(item.id)}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
-                      isPlaying 
-                        ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black' 
-                        : 'bg-white/10 text-white hover:bg-white/20'
-                    }`}
+                return (
+                  <motion.div
+                    key={item.artist.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
+                    className="flex items-center space-x-4 p-4 border-b border-white/10 last:border-b-0 group"
                   >
-                    {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
-                  </motion.button>
-
-                  {/* Artist Avatar */}
-                  <Avatar
-                    src={item.artist.avatar}
-                    alt={item.artist.name}
-                    fallback={item.artist.name.charAt(0)}
-                    className="ring-2 ring-white/20"
-                  />
-
-                  {/* Track Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <h3 className="font-bold text-white truncate">{item.track.title}</h3>
-                      {item.artist.verified && (
-                        <Star className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                    {/* Rank */}
+                    <div className="flex items-center space-x-3 w-16">
+                      <div className="text-2xl font-bold text-white">
+                        {item.current_rank}
+                      </div>
+                      {item.previous_rank && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className={`flex items-center ${
+                            item.rank_change > 0 ? 'text-green-400' :
+                            item.rank_change < 0 ? 'text-red-400' : 'text-gray-400'
+                          }`}
+                        >
+                          {item.rank_change > 0 ? (
+                            <TrendingUp className="w-4 h-4" />
+                          ) : item.rank_change < 0 ? (
+                            <TrendingDown className="w-4 h-4" />
+                          ) : null}
+                          <span className="text-xs ml-1">{Math.abs(item.rank_change)}</span>
+                        </motion.div>
                       )}
-                      <Badge variant="outline" className="text-xs">
-                        {item.track.genre}
-                      </Badge>
                     </div>
-                    <div className="flex items-center space-x-2 text-sm text-gray-400">
-                      <span className="truncate">{item.artist.name}</span>
-                      <span>•</span>
-                      <div className="flex items-center space-x-1">
-                        <MapPin className="w-3 h-3" />
-                        <span className="truncate">{item.artist.location}</span>
-                      </div>
-                      <span>•</span>
-                      <div className="flex items-center space-x-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{item.track.duration}</span>
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Metrics */}
-                  <div className="hidden md:flex items-center space-x-6 text-sm">
-                    <div className="text-center">
-                      <div className="text-white font-bold">{formatNumber(item.metrics.streams)}</div>
-                      <div className="text-gray-400">streams</div>
-                    </div>
-                    <div className="text-center">
-                      <div className={`font-bold ${
-                        item.metrics.growth > 100 ? 'text-green-400' : 
-                        item.metrics.growth > 50 ? 'text-yellow-400' : 'text-gray-300'
-                      }`}>
-                        +{item.metrics.growth}%
-                      </div>
-                      <div className="text-gray-400">growth</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-white font-bold">{item.metrics.countries}</div>
-                      <div className="text-gray-400">countries</div>
-                    </div>
-                  </div>
-
-                  {/* Velocity Indicator */}
-                  <div className="hidden lg:flex items-center space-x-2">
-                    <div className="w-16 bg-gray-700 rounded-full h-2">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${item.metrics.velocity}%` }}
-                        transition={{ delay: index * 0.1, duration: 1 }}
-                        className={`h-2 rounded-full ${
-                          item.metrics.velocity > 80 ? 'bg-gradient-to-r from-green-400 to-blue-400' :
-                          item.metrics.velocity > 60 ? 'bg-gradient-to-r from-yellow-400 to-orange-400' :
-                          'bg-gradient-to-r from-gray-400 to-gray-500'
-                        }`}
-                      />
-                    </div>
-                    <div className="text-xs text-gray-400 w-8">
-                      {item.metrics.velocity}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    {/* Play Button */}
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => toggleLike(item.id)}
-                      className={`p-2 rounded-lg transition-all duration-200 ${
-                        isLiked 
-                          ? 'text-red-400 bg-red-400/20' 
-                          : 'text-gray-400 hover:text-white hover:bg-white/10'
+                      onClick={() => togglePlay(item.artist.id)}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
+                        isPlaying
+                          ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
+                          : 'bg-white/10 text-white hover:bg-white/20'
                       }`}
                     >
-                      <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+                      {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
                     </motion.button>
 
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
-                    >
-                      <Share2 className="w-4 h-4" />
-                    </motion.button>
+                    {/* Artist Avatar */}
+                    <Avatar
+                      src={item.artist.image_url || undefined}
+                      alt={item.artist.name}
+                      fallback={item.artist.name.charAt(0)}
+                      className="ring-2 ring-white/20"
+                    />
 
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
-                    >
-                      <MoreHorizontal className="w-4 h-4" />
-                    </motion.button>
-                  </div>
-                </motion.div>
-              )
-            })}
+                    {/* Track Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <h3 className="font-bold text-white truncate">{item.artist.name}</h3>
+                        {item.artist.popularity > 70 && (
+                          <Star className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                        )}
+                        {item.artist.genres.slice(0, 1).map(genre => (
+                          <Badge key={genre} variant="outline" className="text-xs">
+                            {genre}
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm text-gray-400">
+                        <div className="flex items-center space-x-1">
+                          <Users className="w-3 h-3" />
+                          <span>{formatNumber(item.artist.followers)} followers</span>
+                        </div>
+                        <span>•</span>
+                        <div className="flex items-center space-x-1">
+                          <Zap className="w-3 h-3" />
+                          <span>Score: {Math.round(item.artist.breakout_score)}%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Metrics */}
+                    <div className="hidden md:flex items-center space-x-6 text-sm">
+                      <div className="text-center">
+                        <div className="text-white font-bold">{item.artist.popularity}</div>
+                        <div className="text-gray-400">popularity</div>
+                      </div>
+                      <div className="text-center">
+                        <div className={`font-bold ${
+                          item.trend_score > 80 ? 'text-green-400' :
+                          item.trend_score > 60 ? 'text-yellow-400' : 'text-gray-300'
+                        }`}>
+                          {Math.round(item.trend_score)}%
+                        </div>
+                        <div className="text-gray-400">trend</div>
+                      </div>
+                    </div>
+
+                    {/* Velocity Indicator */}
+                    <div className="hidden lg:flex items-center space-x-2">
+                      <div className="w-16 bg-gray-700 rounded-full h-2">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${item.velocity * 100}%` }}
+                          transition={{ delay: index * 0.1, duration: 1 }}
+                          className={`h-2 rounded-full ${
+                            item.velocity > 0.8 ? 'bg-gradient-to-r from-green-400 to-blue-400' :
+                            item.velocity > 0.5 ? 'bg-gradient-to-r from-yellow-400 to-orange-400' :
+                            'bg-gradient-to-r from-gray-400 to-gray-500'
+                          }`}
+                        />
+                      </div>
+                      <div className="text-xs text-gray-400 w-8">
+                        {Math.round(item.velocity * 100)}%
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => toggleLike(item.artist.id)}
+                        className={`p-2 rounded-lg transition-all duration-200 ${
+                          isLiked
+                            ? 'text-red-400 bg-red-400/20'
+                            : 'text-gray-400 hover:text-white hover:bg-white/10'
+                        }`}
+                      >
+                        <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+                      </motion.button>
+
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </motion.button>
+
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                      >
+                        <MoreHorizontal className="w-4 h-4" />
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                )
+              })
+            ) : (
+              <div className="flex-1 flex items-center justify-center p-12 text-gray-400">
+                <p>No trending artists found for this region.</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
 
       {/* View More */}
-      {trendingData.length > limit && (
+      {trendingData.length > 0 && (
         <div className="text-center">
           <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
             View All Trending

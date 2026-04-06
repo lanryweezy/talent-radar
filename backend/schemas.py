@@ -14,13 +14,13 @@ class ArtistResponse(BaseModel):
     genres: List[str]
     popularity: int
     followers: int
-    image_url: Optional[str]
-    spotify_url: Optional[str]
+    image_url: Optional[str] = None
+    spotify_url: Optional[str] = None
     
     # Social media
-    instagram_handle: Optional[str]
-    tiktok_handle: Optional[str]
-    twitter_handle: Optional[str]
+    instagram_handle: Optional[str] = None
+    tiktok_handle: Optional[str] = None
+    twitter_handle: Optional[str] = None
     
     # AI insights
     breakout_score: float

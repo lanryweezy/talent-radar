@@ -1,4 +1,7 @@
-import numpy as np
+try:
+    import numpy as np
+except ImportError:
+    np = None
 from typing import Dict, List, Optional
 import random
 from datetime import datetime, timedelta

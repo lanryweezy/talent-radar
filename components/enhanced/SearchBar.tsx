@@ -13,11 +13,15 @@ import {
   MapPin,
   Clock,
   Sparkles,
-  Globe
+  Globe,
+  Loader2
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Card, CardContent } from '@/components/ui/Card'
+import { searchArtists } from '@/lib/api'
+import { Artist } from '@/lib/types'
+import { formatNumber } from '@/lib/utils'
 
 interface SearchResult {
   id: string
@@ -33,6 +37,7 @@ interface SearchResult {
 
 interface SearchBarProps {
   onSearch?: (query: string, filters?: any) => void
+  onResultSelect?: (result: SearchResult) => void
   placeholder?: string
   showFilters?: boolean
   showVoiceSearch?: boolean
@@ -41,6 +46,7 @@ interface SearchBarProps {
 
 export default function SearchBar({ 
   onSearch, 
+  onResultSelect,
   placeholder = "Search artists, songs, trends...", 
   showFilters = true,
   showVoiceSearch = true,
@@ -50,51 +56,11 @@ export default function SearchBar({
   const [isExpanded, setIsExpanded] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [isListening, setIsListening] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [showFiltersPanel, setShowFiltersPanel] = useState(false)
   const [selectedFilters, setSelectedFilters] = useState<string[]>([])
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
-
-  // Mock search results
-  const searchResults: SearchResult[] = [
-    {
-      id: '1',
-      type: 'artist',
-      title: 'Burna Boy',
-      subtitle: '2.4M monthly listeners • Lagos, Nigeria',
-      trending: true,
-      verified: true,
-      location: 'Nigeria',
-      growth: 45
-    },
-    {
-      id: '2',
-      type: 'artist',
-      title: 'Tems',
-      subtitle: '1.8M monthly listeners • Lagos, Nigeria',
-      trending: true,
-      verified: true,
-      location: 'Nigeria',
-      growth: 78
-    },
-    {
-      id: '3',
-      type: 'song',
-      title: 'Last Last',
-      subtitle: 'Burna Boy • 45M streams',
-      trending: true,
-      location: 'Global',
-      growth: 23
-    },
-    {
-      id: '4',
-      type: 'trend',
-      title: 'Afrobeats Rising',
-      subtitle: 'Genre trending in 23 countries',
-      trending: true,
-      location: 'Global',
-      growth: 156
-    }
-  ]
 
   const trendingSearches = [
     'Afrobeats Nigeria',
@@ -112,11 +78,38 @@ export default function SearchBar({
     { id: 'global', label: 'Global', icon: Globe },
   ]
 
-  const handleSearch = (searchQuery: string) => {
+  const handleSearch = async (searchQuery: string) => {
     if (onSearch) {
       onSearch(searchQuery, selectedFilters)
     }
-    setShowResults(searchQuery.length > 0)
+
+    if (searchQuery.length < 2) {
+      setSearchResults([])
+      setShowResults(searchQuery.length > 0)
+      return
+    }
+
+    setIsLoading(true)
+    setShowResults(true)
+
+    try {
+      const artists = await searchArtists(searchQuery)
+      const results: SearchResult[] = artists.map(artist => ({
+        id: artist.id,
+        type: 'artist',
+        title: artist.name,
+        subtitle: `${formatNumber(artist.followers)} followers • ${artist.genres.slice(0, 2).join(', ')}`,
+        image: artist.image_url || undefined,
+        verified: artist.popularity > 70,
+        trending: artist.breakout_score > 80,
+        growth: Math.round(artist.breakout_score)
+      }))
+      setSearchResults(results)
+    } catch (error) {
+      console.error('Search failed:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleVoiceSearch = () => {
@@ -183,6 +176,8 @@ export default function SearchBar({
                 transition={{ repeat: Infinity, duration: 1 }}
                 className="w-5 h-5 bg-gradient-to-r from-red-500 to-pink-500 rounded-full"
               />
+            ) : isLoading ? (
+              <Loader2 className="w-5 h-5 text-yellow-400 animate-spin" />
             ) : (
               <Search className="w-5 h-5 text-gray-400" />
             )}
@@ -309,56 +304,72 @@ export default function SearchBar({
               <CardContent className="p-0">
                 {query ? (
                   <div className="max-h-96 overflow-y-auto">
-                    {searchResults.map((result) => {
-                      const Icon = getResultIcon(result.type)
-                      return (
-                        <motion.div
-                          key={result.id}
-                          whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
-                          className="flex items-center space-x-4 p-4 cursor-pointer border-b border-white/10 last:border-b-0"
-                        >
-                          <div className="w-10 h-10 bg-gradient-to-r from-yellow-400/20 to-orange-500/20 rounded-lg flex items-center justify-center">
-                            <Icon className="w-5 h-5 text-yellow-400" />
-                          </div>
-                          
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2">
-                              <span className="text-white font-medium">{result.title}</span>
-                              {result.verified && (
-                                <Sparkles className="w-4 h-4 text-yellow-400" />
-                              )}
-                              {result.trending && (
-                                <Badge variant="gradient" className="text-xs">
-                                  <TrendingUp className="w-3 h-3 mr-1" />
-                                  Hot
-                                </Badge>
+                    {isLoading && searchResults.length === 0 ? (
+                      <div className="p-8 text-center text-gray-400">
+                        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
+                        <span>Searching global talent...</span>
+                      </div>
+                    ) : searchResults.length > 0 ? (
+                      searchResults.map((result) => {
+                        const Icon = getResultIcon(result.type)
+                        return (
+                          <motion.div
+                            key={result.id}
+                            whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
+                            onClick={() => onResultSelect?.(result)}
+                            className="flex items-center space-x-4 p-4 cursor-pointer border-b border-white/10 last:border-b-0"
+                          >
+                            <div className="w-10 h-10 bg-gradient-to-r from-yellow-400/20 to-orange-500/20 rounded-lg flex items-center justify-center">
+                              {result.image ? (
+                                <img src={result.image} alt={result.title} className="w-full h-full object-cover rounded-lg" />
+                              ) : (
+                                <Icon className="w-5 h-5 text-yellow-400" />
                               )}
                             </div>
-                            <div className="text-sm text-gray-400 flex items-center space-x-2">
-                              <span>{result.subtitle}</span>
-                              {result.location && (
-                                <>
-                                  <span>•</span>
-                                  <div className="flex items-center space-x-1">
-                                    <MapPin className="w-3 h-3" />
-                                    <span>{result.location}</span>
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                          </div>
 
-                          {result.growth && (
-                            <div className="text-right">
-                              <div className="text-green-400 font-bold text-sm">
-                                +{result.growth}%
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2">
+                                <span className="text-white font-medium">{result.title}</span>
+                                {result.verified && (
+                                  <Sparkles className="w-4 h-4 text-yellow-400" />
+                                )}
+                                {result.trending && (
+                                  <Badge variant="gradient" className="text-xs">
+                                    <TrendingUp className="w-3 h-3 mr-1" />
+                                    Hot
+                                  </Badge>
+                                )}
                               </div>
-                              <div className="text-xs text-gray-400">growth</div>
+                              <div className="text-sm text-gray-400 flex items-center space-x-2">
+                                <span>{result.subtitle}</span>
+                                {result.location && (
+                                  <>
+                                    <span>•</span>
+                                    <div className="flex items-center space-x-1">
+                                      <MapPin className="w-3 h-3" />
+                                      <span>{result.location}</span>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
                             </div>
-                          )}
-                        </motion.div>
-                      )
-                    })}
+
+                            {result.growth !== undefined && (
+                              <div className="text-right">
+                                <div className="text-green-400 font-bold text-sm">
+                                  {result.growth}%
+                                </div>
+                                <div className="text-xs text-gray-400">score</div>
+                              </div>
+                            )}
+                          </motion.div>
+                        )
+                      })
+                    ) : !isLoading && (
+                      <div className="p-8 text-center text-gray-400">
+                        No results found for "{query}"
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="p-6">

@@ -1,24 +1,16 @@
 {
-  "name": "talent-radar",
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "routes": [
+      "source": "/api/v1/:path*",
+      "destination": "/api/index.py"
+    },
     {
-      "src": "/(.*)",
-      "dest": "/"
+      "source": "/(.*)",
+      "destination": "/"
     }
   ],
   "env": {
-    "NEXT_PUBLIC_APP_URL": "https://talent-radar.vercel.app"
-  },
-  "functions": {
-    "app/**/*.{js,ts,tsx}": {
-      "maxDuration": 30
-    }
+    "NEXT_PUBLIC_API_URL": "/api/v1"
   }
 }

@@ -1,4 +1,7 @@
-import numpy as np
+try:
+    import numpy as np
+except ImportError:
+    np = None
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 import random
@@ -88,7 +91,10 @@ class AnalyticsService:
             rate = (daily_metrics[i]["followers"] - daily_metrics[i-1]["followers"]) / daily_metrics[i-1]["followers"]
             growth_rates.append(rate)
         
-        acceleration = np.mean(np.diff(growth_rates)) if len(growth_rates) > 1 else 0
+        if np:
+            acceleration = np.mean(np.diff(growth_rates)) if len(growth_rates) > 1 else 0
+        else:
+            acceleration = 0
         
         return {
             "artist_id": artist_id,
