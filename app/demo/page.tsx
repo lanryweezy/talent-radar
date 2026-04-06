@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Play, Pause, Volume2, Maximize, Globe, TrendingUp, Users, Music, Star, ArrowRight, CheckCircle } from 'lucide-react'
+import { Play, Pause, Volume2, Maximize, Globe, TrendingUp, Users, Music, Star, ArrowRight, CheckCircle, Mail } from 'lucide-react'
 
 export default function Demo() {
   const [isPlaying, setIsPlaying] = useState(false)
