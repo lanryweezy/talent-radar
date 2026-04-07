@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Play, Pause, Heart, Share2, TrendingUp, MapPin, Users, Music, Star, ExternalLink, ArrowRight, Globe } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -129,10 +130,13 @@ export default function ArtistCard({
         <Card variant="glass" className="overflow-hidden relative border-white/10">
           {/* Background Image */}
           <div className="absolute inset-0">
-            <img
+            <Image
               src={artist.image_url || 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=800'}
               alt={artist.name}
-              className="w-full h-full object-cover opacity-20 group-hover:opacity-30 transition-opacity duration-500"
+              fill
+              className="object-cover opacity-20 group-hover:opacity-30 transition-opacity duration-500"
+              sizes="100vw"
+              priority
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
           </div>
@@ -257,10 +261,12 @@ export default function ArtistCard({
       <Card variant="glass" className="overflow-hidden hover:bg-white/[0.05] transition-all duration-300 border-white/10 bg-black/40 backdrop-blur-2xl">
         {/* Artist Image */}
         <div className="relative aspect-square overflow-hidden">
-          <img
+          <Image
             src={artist.image_url || 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=800'}
             alt={artist.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+            fill
+            className="object-cover group-hover:scale-110 transition-transform duration-700"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
           
           {/* Overlay */}

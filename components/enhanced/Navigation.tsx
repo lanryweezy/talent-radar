@@ -17,7 +17,8 @@ import {
   BarChart3,
   Star,
   ChevronDown,
-  Sparkles
+  Sparkles,
+  Briefcase
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -52,6 +53,7 @@ export default function Navigation({ user }: NavigationProps) {
   const navigationItems = [
     { href: '/dashboard', label: 'Intelligence', icon: BarChart3 },
     { href: '/discover', label: 'Discover', icon: Search },
+    { href: '/portfolio', label: 'Portfolio', icon: Briefcase },
     { href: '/analytics', label: 'Market Analytics', icon: TrendingUp },
     { href: '/compare', label: 'Artist Compare', icon: Zap },
     { href: '/artists', label: 'Artist Roster', icon: Users },

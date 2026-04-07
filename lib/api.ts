@@ -2,6 +2,10 @@ import { Artist, Track, TrendingResponse, SearchQuery } from './types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+// Lightweight in-memory cache
+const cache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 async function fetchWithRetry(url: string, options: RequestInit = {}, retries: number = 3): Promise<Response> {
   let lastError: Error | null = null;
   for (let i = 0; i < retries; i++) {
@@ -149,6 +153,13 @@ export async function getTrendingArtists(
   genre?: string,
   limit: number = 50
 ): Promise<TrendingResponse> {
+  const cacheKey = `trending-${region}-${genre || 'all'}-${limit}`;
+  const cached = cache.get(cacheKey);
+
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+
   try {
     const params = new URLSearchParams({ region, limit: limit.toString() });
     if (genre) {
@@ -161,7 +172,9 @@ export async function getTrendingArtists(
       return { region, genre: genre || null, trending_artists: [], generated_at: new Date().toISOString() };
     }
 
-    return response.json();
+    const data = await response.json();
+    cache.set(cacheKey, { data, timestamp: Date.now() });
+    return data;
   } catch (error) {
     console.error('Trending artists error:', error);
     return { region, genre: genre || null, trending_artists: [], generated_at: new Date().toISOString() };
@@ -169,10 +182,19 @@ export async function getTrendingArtists(
 }
 
 export async function getMarketHeatmap(): Promise<any[]> {
+  const cacheKey = 'market-heatmap';
+  const cached = cache.get(cacheKey);
+
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+
   try {
     const response = await fetchWithRetry(`${API_URL}/analytics/heatmap`);
     if (!response.ok) return [];
-    return response.json();
+    const data = await response.json();
+    cache.set(cacheKey, { data, timestamp: Date.now() });
+    return data;
   } catch (error) {
     console.error('Market heatmap error:', error);
     return [];

@@ -1,13 +1,84 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, Filter, MapPin, Calendar, TrendingUp, Users, Music, Play, Star, Heart, Share2, Zap, Globe2, Loader2 } from 'lucide-react'
+import { Search, MapPin, Calendar, TrendingUp, Users, Music, Play, Star, Heart, Share2, Zap, Globe2, Loader2 } from 'lucide-react'
 import ArtistCard from '@/components/enhanced/ArtistCard'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { AdvancedFilters } from '@/components/enhanced/AdvancedFilters'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { getTrendingArtists, searchArtists } from '@/lib/api'
 import { Artist, TrendingArtistItem } from '@/lib/types'
 import { toast } from 'react-hot-toast'
+
+const filterGroups = [
+  {
+    id: 'genre',
+    label: 'Primary Genre',
+    options: [
+      { label: 'All Genres', value: 'all' },
+      { label: 'Afrobeats', value: 'Afrobeats' },
+      { label: 'Hip Hop', value: 'Hip Hop' },
+      { label: 'R&B', value: 'R&B' },
+      { label: 'Pop', value: 'Pop' },
+      { label: 'Amapiano', value: 'Amapiano' }
+    ]
+  },
+  {
+    id: 'region',
+    label: 'Origin Market',
+    options: [
+      { label: 'Global', value: 'global' },
+      { label: 'Nigeria', value: 'nigeria' },
+      { label: 'Ghana', value: 'ghana' },
+      { label: 'South Africa', value: 'south_africa' },
+      { label: 'Kenya', value: 'kenya' },
+      { label: 'United States', value: 'united_states' }
+    ]
+  },
+  {
+    id: 'growthRate',
+    label: 'Growth Velocity',
+    options: [
+      { label: 'Any Growth', value: 'all' },
+      { label: '0-50%', value: '0-50' },
+      { label: '50-100%', value: '50-100' },
+      { label: '100-200%', value: '100-200' },
+      { label: '200%+', value: '200' }
+    ]
+  },
+  {
+    id: 'followers',
+    label: 'Reach',
+    options: [
+      { label: 'Any Size', value: 'all' },
+      { label: '0-1M', value: '0-1' },
+      { label: '1-5M', value: '1-5' },
+      { label: '5-10M', value: '5-10' },
+      { label: '10M+', value: '10' }
+    ]
+  },
+  {
+    id: 'breakoutScore',
+    label: 'Intelligence Score',
+    options: [
+      { label: 'Any Score', value: 'all' },
+      { label: '70-80', value: '70-80' },
+      { label: '80-90', value: '80-90' },
+      { label: '90-100', value: '90-100' }
+    ]
+  },
+  {
+    id: 'timeframe',
+    label: 'Time Frame',
+    options: [
+      { label: 'Last 7 days', value: '7d' },
+      { label: 'Last 30 days', value: '30d' },
+      { label: 'Last 90 days', value: '90d' },
+      { label: 'Last year', value: '1y' }
+    ]
+  }
+]
 
 interface DiscoverFilters {
   genre: string
@@ -97,17 +168,6 @@ export default function Discover() {
 
   const artistsToDisplay = searchResults.length > 0 ? searchResults : trendingItems.map(item => item.artist)
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 text-indigo-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Scanning Global Markets...</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen bg-[#020617] text-white selection:bg-indigo-500/30">
       {/* Background Glows */}
@@ -132,14 +192,6 @@ export default function Discover() {
               </p>
             </div>
             <div className="flex items-center space-x-4 w-full md:w-auto">
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex-1 md:flex-none py-6 px-8"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                {showFilters ? 'Hide Filters' : 'Advanced Filters'}
-              </Button>
               <Button variant="gradient" className="flex-1 md:flex-none py-6 px-8">
                 <Zap className="w-4 h-4 mr-2" />
                 AI Recommendations
@@ -173,103 +225,13 @@ export default function Discover() {
           </div>
         </div>
 
-        {/* Advanced Filters */}
-        {showFilters && (
-          <div className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8 mb-12">
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-6">Discovery Parameters</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div>
-                <label className="text-xs font-bold text-gray-400 mb-2 block">Primary Genre</label>
-                <select
-                  value={filters.genre}
-                  onChange={(e) => setFilters({...filters, genre: e.target.value})}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:ring-1 focus:ring-indigo-500 appearance-none"
-                >
-                  <option value="all">All Genres</option>
-                  <option value="Afrobeats">Afrobeats</option>
-                  <option value="Hip Hop">Hip Hop</option>
-                  <option value="R&B">R&B</option>
-                  <option value="Pop">Pop</option>
-                  <option value="Amapiano">Amapiano</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-gray-400 mb-2 block">Origin Market</label>
-                <select
-                  value={filters.region}
-                  onChange={(e) => setFilters({...filters, region: e.target.value})}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:ring-1 focus:ring-indigo-500 appearance-none"
-                >
-                  <option value="global">Global</option>
-                  <option value="nigeria">Nigeria</option>
-                  <option value="ghana">Ghana</option>
-                  <option value="south_africa">South Africa</option>
-                  <option value="kenya">Kenya</option>
-                  <option value="united_states">United States</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-gray-400 mb-2 block">Growth Velocity</label>
-                <select
-                  value={filters.growthRate}
-                  onChange={(e) => setFilters({...filters, growthRate: e.target.value})}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:ring-1 focus:ring-indigo-500 appearance-none"
-                >
-                  <option value="all">Any Growth</option>
-                  <option value="0-50">0-50%</option>
-                  <option value="50-100">50-100%</option>
-                  <option value="100-200">100-200%</option>
-                  <option value="200">200%+</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="label">Followers</label>
-                <select
-                  value={filters.followers}
-                  onChange={(e) => setFilters({...filters, followers: e.target.value})}
-                  className="input w-full"
-                >
-                  <option value="all">Any Size</option>
-                  <option value="0-1">0-1M</option>
-                  <option value="1-5">1-5M</option>
-                  <option value="5-10">5-10M</option>
-                  <option value="10">10M+</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="label">Breakout Score</label>
-                <select
-                  value={filters.breakoutScore}
-                  onChange={(e) => setFilters({...filters, breakoutScore: e.target.value})}
-                  className="input w-full"
-                >
-                  <option value="all">Any Score</option>
-                  <option value="70-80">70-80</option>
-                  <option value="80-90">80-90</option>
-                  <option value="90-100">90-100</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="label">Time Frame</label>
-                <select
-                  value={filters.timeframe}
-                  onChange={(e) => setFilters({...filters, timeframe: e.target.value})}
-                  className="input w-full"
-                >
-                  <option value="7d">Last 7 days</option>
-                  <option value="30d">Last 30 days</option>
-                  <option value="90d">Last 90 days</option>
-                  <option value="1y">Last year</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        )}
+        <AdvancedFilters
+          groups={filterGroups}
+          selectedFilters={filters as any}
+          onFilterChange={(id, value) => setFilters({ ...filters, [id]: value })}
+          onReset={resetFilters}
+          className="mb-12"
+        />
 
         {/* Quick Categories */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
@@ -311,7 +273,23 @@ export default function Discover() {
             </div>
           </div>
 
-          {artistsToDisplay.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="glass-card rounded-[40px] p-10 border border-white/5 space-y-6">
+                   <Skeleton className="w-full aspect-square rounded-[32px]" />
+                   <div className="space-y-3">
+                     <Skeleton className="h-6 w-3/4" />
+                     <Skeleton className="h-4 w-1/2" />
+                   </div>
+                   <div className="flex gap-4 pt-4">
+                      <Skeleton className="h-12 flex-1 rounded-xl" />
+                      <Skeleton className="h-12 w-12 rounded-xl" />
+                   </div>
+                </div>
+              ))}
+            </div>
+          ) : artistsToDisplay.length === 0 ? (
             <div className="text-center py-24 bg-white/[0.02] rounded-[40px] border border-dashed border-white/10">
               <div className="w-20 h-20 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Music className="w-10 h-10 text-indigo-400" />
