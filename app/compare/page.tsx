@@ -225,10 +225,14 @@ export default function Compare() {
             </Card>
           </div>
         ) : (
-          <div className="py-24 text-center bg-white/[0.02] rounded-[40px] border border-dashed border-white/10">
-            <ArrowRightLeft className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-            <h3 className="text-2xl font-black text-gray-500">No artists selected for comparison</h3>
-            <p className="text-gray-600 font-medium mt-2">Search and add up to 3 artists to begin deep benchmarking.</p>
+          <div className="py-32 text-center bg-white/[0.02] rounded-[40px] border border-dashed border-white/5 backdrop-blur-3xl">
+            <div className="w-20 h-20 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-8">
+               <ArrowRightLeft className="w-10 h-10 text-indigo-500/40" />
+            </div>
+            <h3 className="text-3xl font-black text-white tracking-tighter mb-4">No artists selected for comparison.</h3>
+            <p className="text-slate-500 font-medium max-w-sm mx-auto leading-relaxed">
+               Search and add up to 3 artists to begin a high-fidelity sonic and growth velocity benchmarking session.
+            </p>
           </div>
         )}
       </div>

@@ -141,46 +141,90 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Feature Section - Tighter & More Professional */}
+      {/* Core Intelligence Pillar */}
       <div className="py-32 relative">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-end justify-between mb-20 gap-8">
             <div className="max-w-2xl">
               <h2 className="text-xs font-black text-orange-500 uppercase tracking-[0.3em] mb-4">Core Intelligence</h2>
-              <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter">Engineered for the Modern A&R.</h3>
+              <h3 className="text-4xl md:text-6xl font-black text-white tracking-tighter">Engineered for the <br /> Modern A&R.</h3>
             </div>
-            <p className="text-slate-400 font-medium max-w-sm mb-2">
-              Our infrastructure processes billions of signals to identify talent before the algorithm does.
+            <p className="text-slate-400 font-medium max-w-sm mb-2 leading-relaxed">
+              Our proprietary infrastructure processes billions of signals daily to identify global breakout talent before they reach the mainstream.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
-                title: 'Talent Score™',
-                desc: 'Proprietary weighted formula calculating growth, engagement, and cross-platform virality.',
+                title: 'Talent Score v2.4',
+                desc: 'Our proprietary weighted matrix calculating velocity, engagement, and cross-platform cultural pull.',
                 icon: Rocket
               },
               {
-                title: 'Cultural Archetyping',
-                desc: 'AI-driven categorization of artists based on sonic profile and audience demographics.',
+                title: 'AI Archetyping',
+                desc: 'Categorize artists via sonic fingerprints and audience DNA using deep learning models.',
                 icon: Target
               },
               {
-                title: 'Market Heatmaps',
-                desc: 'Visualize regional breakthroughs and identify underserved musical markets globally.',
+                title: 'Node Analytics',
+                desc: 'Visualize regional opportunity clusters and identify underserved markets in real-time.',
                 icon: Globe
               }
             ].map((f, i) => (
-              <div key={i} className="glass-card p-10 rounded-3xl border border-white/5 hover:border-orange-500/20 transition-all group">
+              <div key={i} className="glass-card p-10 rounded-3xl border border-white/5 hover:border-orange-500/20 transition-all group relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                   <f.icon className="w-32 h-32 text-white" />
+                </div>
                 <div className="w-14 h-14 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-orange-500/20 transition-colors">
                   <f.icon className="w-7 h-7 text-orange-500" />
                 </div>
-                <h4 className="text-xl font-black text-white mb-4">{f.title}</h4>
-                <p className="text-slate-400 leading-relaxed text-sm font-medium">{f.desc}</p>
+                <h4 className="text-2xl font-black text-white mb-4">{f.title}</h4>
+                <p className="text-slate-400 leading-relaxed font-medium">{f.desc}</p>
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* How it Works / The Methodology */}
+      <div className="py-32 bg-white/[0.02] border-y border-white/5 relative">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-20">
+             <h2 className="text-[10px] font-black text-orange-500 uppercase tracking-[0.4em] mb-4">The Methodology</h2>
+             <h3 className="text-5xl font-black text-white tracking-tighter mb-6">From Signal to Signing.</h3>
+             <p className="text-slate-400 font-medium">A standardized framework for data-driven artist acquisition.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+             {[
+               { step: '01', title: 'Data Ingestion', desc: 'Aggregate streams, social, and cultural signals.' },
+               { step: '02', title: 'Signal Isolation', desc: 'Identify non-linear growth patterns and outliers.' },
+               { step: '03', title: 'AI Validation', desc: 'Predict long-term scalability and market fit.' },
+               { step: '04', title: 'A&R Review', desc: 'Executive intelligence briefing for rapid signing.' }
+             ].map((s, i) => (
+               <div key={i} className="p-8 border-l border-white/5 hover:bg-white/5 transition-all">
+                  <div className="text-3xl font-black text-orange-500/20 mb-6">{s.step}</div>
+                  <h4 className="text-lg font-black text-white mb-3">{s.title}</h4>
+                  <p className="text-sm text-slate-500 font-medium leading-relaxed">{s.desc}</p>
+               </div>
+             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Trust / Social Proof */}
+      <div className="py-32">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+           <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-12">Trusted by Intelligence Leads at</h2>
+           <div className="flex flex-wrap justify-center items-center gap-16 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all duration-700">
+             {/* Mock Partner Logos */}
+             <div className="text-2xl font-black tracking-tighter text-white">SONIC CAPITAL</div>
+             <div className="text-2xl font-black tracking-tighter text-white">GLOBAL LABELS</div>
+             <div className="text-2xl font-black tracking-tighter text-white">ALPHA RECORDS</div>
+             <div className="text-2xl font-black tracking-tighter text-white">VORTEX MUSIC</div>
+             <div className="text-2xl font-black tracking-tighter text-white">INDIE DISTRO</div>
+           </div>
         </div>
       </div>
 
@@ -194,7 +238,7 @@ export default function Home() {
             <span className="text-lg font-black text-white tracking-tighter">TALENTRADAR</span>
           </div>
           <p className="text-slate-500 text-sm font-medium">
-            © 2024 Global Intelligence. Built for the Next Billion Streams.
+            © 2024 TalentRadar Intelligence. Built for the Next Billion Streams.
           </p>
           <div className="flex space-x-6 text-slate-400">
             <Link href="#" className="hover:text-white transition-colors font-bold text-xs">Terms</Link>
