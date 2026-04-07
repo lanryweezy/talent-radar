@@ -47,16 +47,15 @@
 - **Framer Motion** - Smooth animations
 - **Headless UI** - Accessible components
 
-### Backend (Planned)
-- **FastAPI** - High-performance Python API
-- **PostgreSQL** - Primary database
-- **Redis** - Caching and real-time features
-- **AI/ML Stack** - PyTorch, Hugging Face transformers
+### Backend
+- **FastAPI** - High-performance Python API for discovery intelligence
+- **SQLAlchemy** - Robust ORM with SQLite (ephemeral on Vercel)
+- **AI Service** - Proprietary scoring algorithms and artist archetyping
+- **Analytics Service** - Multi-platform velocity tracking and growth deltas
 
 ### Deployment
-- **Vercel** - Frontend hosting
-- **AWS/GCP** - Backend infrastructure
-- **CDN** - Global content delivery
+- **Vercel** - Full-stack hosting (Next.js + FastAPI Serverless)
+- **Edge Runtime** - Global content delivery and low-latency API execution
 
 ## 🚀 Quick Start
 
@@ -147,11 +146,11 @@ INSTAGRAM_ACCESS_TOKEN=your_instagram_token
 
 ### 🎯 **Phase 1: Beta Launch** (Q1 2024)
 - [x] Core A&R features
-- [x] 50+ countries coverage
-- [x] AI predictions v1.0
-- [x] Modern UI/UX
-- [ ] User authentication
-- [ ] Basic API integration
+- [x] 150+ countries coverage
+- [x] AI Intelligence Engine v2.4 (Talent Score & Archetypes)
+- [x] Modern UI/UX (Plus Jakarta Sans, Dark Mode)
+- [x] FastAPI Backend Integration
+- [x] Vercel Deployment Hardening
 
 ### 🌍 **Phase 2: Global Launch** (Q2 2024)
 - [ ] 150+ countries coverage
