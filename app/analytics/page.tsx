@@ -38,7 +38,7 @@ export default function Analytics() {
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px]" />
       </div>
 
-      <Navigation user={{ name: 'A&R Intelligence', role: 'Lead Strategist' }} />
+      <Navigation user={{ name: 'A&R Intelligence', email: 'intel@talentradar.ai', role: 'Lead Strategist' }} />
 
       {/* Market Pulse Header */}
       <div className="relative z-10 pt-20 pb-12 border-b border-white/5 bg-black/40 backdrop-blur-3xl">

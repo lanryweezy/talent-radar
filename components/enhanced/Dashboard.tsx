@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   TrendingUp, Users, Music, Globe, Search, Bell, Settings, Star, Zap, BarChart3, MapPin, Calendar, Play, Heart, Share2, Filter, ArrowUpRight, Sparkles, Target, Rocket, Eye, Loader2, ChevronRight, Activity, ShieldCheck, ZapOff, Flame
 } from 'lucide-react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -180,7 +181,7 @@ export default function Dashboard() {
                     <Link key={i} href={`/artist/${prediction.artist.id}`} className="block group">
                       <div className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-orange-500/30 hover:bg-white/[0.08] transition-all">
                         <div className="flex items-center gap-3">
-                          <img src={prediction.artist.image_url} className="w-10 h-10 rounded-xl object-cover ring-1 ring-white/10" />
+                          <img src={prediction.artist.image_url || '/placeholder.png'} className="w-10 h-10 rounded-xl object-cover ring-1 ring-white/10" />
                           <div className="flex-1 min-w-0">
                             <h4 className="text-sm font-bold text-white truncate">{prediction.artist.name}</h4>
                             <div className="flex items-center text-[10px] text-slate-500 font-bold uppercase tracking-wider">
