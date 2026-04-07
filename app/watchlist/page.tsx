@@ -189,11 +189,13 @@ export default function Watchlist() {
           {filteredArtists.map(artist => (
             <div key={artist.id} className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/[0.05] transition-all group">
               <div className="flex flex-col md:flex-row items-start gap-8">
-                <img
-                  src={artist.image_url || '/placeholder-artist.png'}
-                  alt={artist.name}
-                  className="w-32 h-32 rounded-2xl object-cover shadow-2xl"
-                />
+                <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-2xl bg-white/5 border border-white/10">
+                  <img
+                    src={artist.image_url || 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400'}
+                    alt={artist.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
                 
                 <div className="flex-1 w-full">
                   <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
@@ -254,14 +256,14 @@ export default function Watchlist() {
         </div>
 
         {filteredArtists.length === 0 && (
-          <div className="text-center py-12">
-            <Star className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No artists in watchlist</h3>
-            <p className="text-gray-600 mb-4">Start building your watchlist by discovering new talent.</p>
-            <button className="btn btn-primary">
+          <div className="text-center py-24 bg-white/[0.02] rounded-[40px] border border-dashed border-white/10">
+            <Star className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+            <h3 className="text-2xl font-black text-gray-500 mb-2">No artists in watchlist</h3>
+            <p className="text-gray-600 font-medium mb-8">Start building your watchlist by discovering new talent.</p>
+            <Button variant="gradient">
               <Plus className="w-4 h-4 mr-2" />
               Add Your First Artist
-            </button>
+            </Button>
           </div>
         )}
       </div>

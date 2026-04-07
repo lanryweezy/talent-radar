@@ -334,11 +334,11 @@ export default function Discover() {
         </div>
 
         {/* Load More */}
-        {filteredArtists.length > 0 && (
+        {artistsToDisplay.length > 0 && (
           <div className="text-center mt-12">
-            <button className="btn btn-outline">
+            <Button variant="outline">
               Load More Artists
-            </button>
+            </Button>
           </div>
         )}
       </div>

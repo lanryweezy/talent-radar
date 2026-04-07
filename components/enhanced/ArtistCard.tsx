@@ -2,33 +2,17 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Play, Pause, Heart, Share2, TrendingUp, MapPin, Users, Music, Star, ExternalLink } from 'lucide-react'
+import { Play, Pause, Heart, Share2, TrendingUp, MapPin, Users, Music, Star, ExternalLink, ArrowRight, Globe } from 'lucide-react'
+import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Avatar } from '@/components/ui/Avatar'
 import { cn, formatNumber } from '@/lib/utils'
+import { Artist } from '@/lib/types'
 
 interface ArtistCardProps {
-  artist: {
-    id: string
-    name: string
-    image: string
-    genre: string
-    location: string
-    followers: number
-    monthlyListeners: number
-    growthRate: number
-    breakoutScore: number
-    topTrack: string
-    isVerified: boolean
-    isRising: boolean
-    socialMedia: {
-      instagram?: number
-      tiktok?: number
-      twitter?: number
-    }
-  }
+  artist: Artist
   variant?: 'default' | 'compact' | 'featured'
   showPlayButton?: boolean
   onPlay?: (artistId: string) => void
@@ -63,14 +47,14 @@ export default function ArtistCard({
   }
 
   const getBreakoutColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 bg-green-100'
-    if (score >= 60) return 'text-yellow-600 bg-yellow-100'
-    return 'text-red-600 bg-red-100'
+    if (score >= 80) return 'bg-green-500/10 text-green-400'
+    if (score >= 60) return 'bg-yellow-500/10 text-yellow-400'
+    return 'bg-red-500/10 text-red-400'
   }
 
-  const getGrowthIcon = (rate: number) => {
-    if (rate > 0) return <TrendingUp className="w-4 h-4 text-green-500" />
-    return <TrendingUp className="w-4 h-4 text-red-500 rotate-180" />
+  const getTrendIcon = (direction: string) => {
+    if (direction === 'up') return <TrendingUp className="w-4 h-4 text-green-400" />
+    return <TrendingUp className="w-4 h-4 text-red-400 rotate-180" />
   }
 
   if (variant === 'compact') {
@@ -80,14 +64,15 @@ export default function ArtistCard({
         whileTap={{ scale: 0.98 }}
         className="group"
       >
-        <Card variant="glass" className="p-4 cursor-pointer hover:shadow-xl transition-all duration-300">
+        <Card variant="glass" className="p-4 cursor-pointer hover:bg-white/[0.05] transition-all duration-300 border-white/10">
           <div className="flex items-center space-x-4">
             <div className="relative">
               <Avatar
-                src={artist.image}
+                src={artist.image_url || undefined}
                 alt={artist.name}
                 size="lg"
-                className="group-hover:ring-2 group-hover:ring-primary-500 transition-all duration-300"
+                fallback={artist.name[0]}
+                className="group-hover:ring-2 group-hover:ring-indigo-500 transition-all duration-300"
               />
               {showPlayButton && (
                 <Button
@@ -103,26 +88,26 @@ export default function ArtistCard({
             
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2">
-                <h3 className="font-semibold text-gray-900 truncate">{artist.name}</h3>
-                {artist.isVerified && <Star className="w-4 h-4 text-yellow-500 fill-current" />}
-                {artist.isRising && <Badge variant="gradient" size="sm">Rising</Badge>}
+                <h3 className="font-bold text-white truncate">{artist.name}</h3>
+                {artist.popularity > 70 && <Star className="w-4 h-4 text-yellow-400 fill-current" />}
+                {artist.trend_direction === 'up' && <Badge variant="gradient" size="sm">Trending</Badge>}
               </div>
-              <p className="text-sm text-gray-600 truncate">{artist.genre}</p>
+              <p className="text-sm text-gray-400 truncate">{artist.genres[0]}</p>
               <div className="flex items-center space-x-4 mt-1">
                 <span className="text-xs text-gray-500 flex items-center">
                   <Users className="w-3 h-3 mr-1" />
                   {formatNumber(artist.followers)}
                 </span>
                 <span className="text-xs text-gray-500 flex items-center">
-                  {getGrowthIcon(artist.growthRate)}
-                  <span className="ml-1">{artist.growthRate > 0 ? '+' : ''}{artist.growthRate}%</span>
+                  {getTrendIcon(artist.trend_direction)}
+                  <span className="ml-1">{artist.trend_direction.toUpperCase()}</span>
                 </span>
               </div>
             </div>
 
             <div className="text-right">
-              <div className={cn('text-xs font-medium px-2 py-1 rounded-full', getBreakoutColor(artist.breakoutScore))}>
-                {artist.breakoutScore}%
+              <div className={cn('text-[10px] font-black px-2 py-1 rounded-lg uppercase tracking-widest', getBreakoutColor(artist.breakout_score))}>
+                {Math.round(artist.breakout_score)}%
               </div>
             </div>
           </div>
@@ -141,15 +126,15 @@ export default function ArtistCard({
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
       >
-        <Card variant="gradient" className="overflow-hidden relative">
+        <Card variant="glass" className="overflow-hidden relative border-white/10">
           {/* Background Image */}
           <div className="absolute inset-0">
             <img
-              src={artist.image}
+              src={artist.image_url || 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=800'}
               alt={artist.name}
               className="w-full h-full object-cover opacity-20 group-hover:opacity-30 transition-opacity duration-500"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
           </div>
 
           {/* Content */}
@@ -157,20 +142,21 @@ export default function ArtistCard({
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center space-x-4">
                 <Avatar
-                  src={artist.image}
+                  src={artist.image_url || undefined}
                   alt={artist.name}
                   size="xl"
                   ring
+                  fallback={artist.name[0]}
                 />
                 <div>
                   <div className="flex items-center space-x-2 mb-2">
                     <h2 className="text-2xl font-bold text-white">{artist.name}</h2>
-                    {artist.isVerified && <Star className="w-5 h-5 text-yellow-400 fill-current" />}
+                    {artist.popularity > 70 && <Star className="w-5 h-5 text-yellow-400 fill-current" />}
                   </div>
-                  <p className="text-white/80 mb-1">{artist.genre}</p>
+                  <p className="text-white/80 mb-1">{artist.genres.slice(0, 2).join(', ')}</p>
                   <div className="flex items-center text-white/60 text-sm">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    {artist.location}
+                    <Globe className="w-4 h-4 mr-1 text-indigo-400" />
+                    Global Market
                   </div>
                 </div>
               </div>
@@ -199,22 +185,22 @@ export default function ArtistCard({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">{formatNumber(artist.followers)}</div>
-                <div className="text-white/60 text-sm">Followers</div>
+                <div className="text-white/60 text-[10px] font-black uppercase tracking-widest">Followers</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-white">{formatNumber(artist.monthlyListeners)}</div>
-                <div className="text-white/60 text-sm">Monthly</div>
+                <div className="text-2xl font-bold text-white">{artist.popularity}</div>
+                <div className="text-white/60 text-[10px] font-black uppercase tracking-widest">Popularity</div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center text-2xl font-bold text-white">
-                  {getGrowthIcon(artist.growthRate)}
-                  <span className="ml-1">{artist.growthRate > 0 ? '+' : ''}{artist.growthRate}%</span>
+                  {getTrendIcon(artist.trend_direction)}
+                  <span className="ml-1 text-green-400">{artist.trend_direction.toUpperCase()}</span>
                 </div>
-                <div className="text-white/60 text-sm">Growth</div>
+                <div className="text-white/60 text-[10px] font-black uppercase tracking-widest">Trend</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-white">{artist.breakoutScore}%</div>
-                <div className="text-white/60 text-sm">Breakout</div>
+                <div className="text-2xl font-bold text-indigo-400">{Math.round(artist.breakout_score)}%</div>
+                <div className="text-white/60 text-[10px] font-black uppercase tracking-widest">Breakout</div>
               </div>
             </div>
 
@@ -225,43 +211,34 @@ export default function ArtistCard({
                   <Button
                     variant="gradient"
                     onClick={handlePlay}
-                    className="shadow-lg"
+                    className="shadow-lg px-6"
                   >
                     {isPlaying ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2 ml-0.5" />}
                     {isPlaying ? 'Pause' : 'Play'}
                   </Button>
                 )}
-                <Button variant="outline" className="border-white/30 text-white hover:bg-white/20">
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  View Profile
-                </Button>
+                <Link href={`/artist/${artist.id}`}>
+                  <Button variant="outline" className="border-white/30 text-white hover:bg-white/20 px-6">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    A&R Intelligence
+                  </Button>
+                </Link>
               </div>
 
               <div className="flex items-center space-x-2">
-                {artist.isRising && <Badge variant="gradient">🔥 Rising Star</Badge>}
-                <Badge variant="outline" className="border-white/30 text-white">
-                  {artist.genre}
+                {artist.trend_direction === 'up' && <Badge variant="gradient">🔥 Viral Potential</Badge>}
+                <Badge variant="outline" className="border-white/30 text-white uppercase tracking-widest text-[10px] font-black">
+                  {artist.genres[0]}
                 </Badge>
               </div>
             </div>
-
-            {/* Top Track */}
-            {artist.topTrack && (
-              <div className="mt-4 pt-4 border-t border-white/20">
-                <div className="flex items-center text-white/80 text-sm">
-                  <Music className="w-4 h-4 mr-2" />
-                  <span>Top Track: </span>
-                  <span className="font-medium ml-1">{artist.topTrack}</span>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Hover Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: isHovered ? 1 : 0 }}
-            className="absolute inset-0 bg-gradient-to-t from-primary-500/20 to-transparent pointer-events-none"
+            className="absolute inset-0 bg-gradient-to-t from-indigo-500/10 to-transparent pointer-events-none"
           />
         </Card>
       </motion.div>
@@ -274,25 +251,27 @@ export default function ArtistCard({
       whileHover={{ y: -4 }}
       whileTap={{ scale: 0.98 }}
       className="group"
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
     >
-      <Card variant="glass" className="overflow-hidden hover:shadow-xl transition-all duration-300">
+      <Card variant="glass" className="overflow-hidden hover:bg-white/[0.05] transition-all duration-300 border-white/10 bg-black/40 backdrop-blur-2xl">
         {/* Artist Image */}
         <div className="relative aspect-square overflow-hidden">
           <img
-            src={artist.image}
+            src={artist.image_url || 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=800'}
             alt={artist.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
           />
           
           {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
           
           {/* Play Button */}
           {showPlayButton && (
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: isHovered ? 1 : 0 }}
-              className="absolute inset-0 flex items-center justify-center"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: isHovered ? 1 : 0, opacity: isHovered ? 1 : 0 }}
+              className="absolute inset-0 flex items-center justify-center z-20"
             >
               <Button
                 size="lg"
@@ -306,17 +285,17 @@ export default function ArtistCard({
           )}
 
           {/* Badges */}
-          <div className="absolute top-4 left-4 flex space-x-2">
-            {artist.isRising && <Badge variant="gradient" size="sm">🔥 Rising</Badge>}
-            {artist.isVerified && <Badge variant="primary" size="sm">✓ Verified</Badge>}
+          <div className="absolute top-4 left-4 flex space-x-2 z-20">
+            {artist.trend_direction === 'up' && <Badge variant="gradient" className="text-[10px] font-black uppercase tracking-widest">🔥 Trending</Badge>}
+            {artist.popularity > 80 && <Badge variant="outline" className="bg-black/50 backdrop-blur-md text-yellow-400 border-yellow-500/50 text-[10px] font-black uppercase tracking-widest">Pro Pick</Badge>}
           </div>
 
           {/* Actions */}
-          <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
             <Button
               size="sm"
               variant="ghost"
-              className="bg-black/20 text-white hover:bg-black/40 backdrop-blur-sm"
+              className="bg-black/40 text-white hover:bg-black/60 backdrop-blur-md border border-white/10"
               onClick={handleLike}
             >
               <Heart className={cn('w-4 h-4', isLiked && 'fill-current text-red-500')} />
@@ -324,7 +303,7 @@ export default function ArtistCard({
             <Button
               size="sm"
               variant="ghost"
-              className="bg-black/20 text-white hover:bg-black/40 backdrop-blur-sm"
+              className="bg-black/40 text-white hover:bg-black/60 backdrop-blur-md border border-white/10"
               onClick={handleShare}
             >
               <Share2 className="w-4 h-4" />
@@ -333,69 +312,62 @@ export default function ArtistCard({
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-8">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2 mb-1">
-                <h3 className="font-bold text-lg text-gray-900 truncate">{artist.name}</h3>
-                {artist.isVerified && <Star className="w-4 h-4 text-yellow-500 fill-current flex-shrink-0" />}
+                <Link href={`/artist/${artist.id}`}>
+                  <h3 className="font-black text-2xl text-white truncate hover:text-indigo-400 transition-colors">{artist.name}</h3>
+                </Link>
+                {artist.popularity > 70 && <Star className="w-4 h-4 text-yellow-400 fill-current flex-shrink-0" />}
               </div>
-              <p className="text-gray-600 text-sm mb-2">{artist.genre}</p>
-              <div className="flex items-center text-gray-500 text-sm">
-                <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-                <span className="truncate">{artist.location}</span>
+              <p className="text-gray-400 font-medium mb-3">{artist.genres[0] || 'Unknown Genre'}</p>
+              <div className="flex items-center text-gray-500 text-sm font-bold">
+                <Globe className="w-4 h-4 mr-2 text-indigo-500" />
+                <span className="truncate">Global Market</span>
               </div>
             </div>
             
-            <div className={cn('text-xs font-bold px-3 py-1 rounded-full', getBreakoutColor(artist.breakoutScore))}>
-              {artist.breakoutScore}%
+            <div className={cn('text-[10px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest', getBreakoutColor(artist.breakout_score))}>
+              {Math.round(artist.breakout_score)}%
             </div>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-2 gap-6 mb-6 pt-6 border-t border-white/5">
             <div>
-              <div className="flex items-center text-gray-900 font-semibold">
-                <Users className="w-4 h-4 mr-2 text-gray-500" />
+              <div className="flex items-center text-white font-bold text-lg">
+                <Users className="w-4 h-4 mr-2 text-indigo-400" />
                 {formatNumber(artist.followers)}
               </div>
-              <div className="text-xs text-gray-500">Followers</div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-gray-500">Reach</div>
             </div>
             <div>
-              <div className="flex items-center text-gray-900 font-semibold">
-                <Music className="w-4 h-4 mr-2 text-gray-500" />
-                {formatNumber(artist.monthlyListeners)}
+              <div className="flex items-center text-white font-bold text-lg">
+                <Music className="w-4 h-4 mr-2 text-purple-400" />
+                {artist.popularity}
               </div>
-              <div className="text-xs text-gray-500">Monthly Listeners</div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-gray-500">Popularity</div>
             </div>
           </div>
 
           {/* Growth Rate */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pt-6 border-t border-white/5">
             <div className="flex items-center space-x-2">
-              {getGrowthIcon(artist.growthRate)}
-              <span className={cn('font-medium text-sm', 
-                artist.growthRate > 0 ? 'text-green-600' : 'text-red-600'
+              {getTrendIcon(artist.trend_direction)}
+              <span className={cn('font-black text-xs uppercase tracking-widest',
+                artist.trend_direction === 'up' ? 'text-green-400' : 'text-gray-400'
               )}>
-                {artist.growthRate > 0 ? '+' : ''}{artist.growthRate}% growth
+                {artist.trend_direction} trend
               </span>
             </div>
             
-            <Button size="sm" variant="outline" className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              View Details
-            </Button>
+            <Link href={`/artist/${artist.id}`}>
+              <Button size="sm" variant="ghost" className="text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-indigo-300 px-0">
+                View Intel <ArrowRight className="w-3 h-3 ml-2" />
+              </Button>
+            </Link>
           </div>
-
-          {/* Top Track */}
-          {artist.topTrack && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="flex items-center text-gray-600 text-sm">
-                <Music className="w-4 h-4 mr-2" />
-                <span>Top: </span>
-                <span className="font-medium ml-1 truncate">{artist.topTrack}</span>
-              </div>
-            </div>
-          )}
         </div>
       </Card>
     </motion.div>

@@ -253,11 +253,13 @@ export default function Artists() {
             <div key={artist.id} className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/[0.05] transition-all group">
               <div className="flex flex-col md:flex-row items-start gap-8">
                 <div className="relative">
-                  <img
-                    src={artist.image_url || '/placeholder-artist.png'}
-                    alt={artist.name}
-                    className="w-32 h-32 rounded-2xl object-cover shadow-2xl"
-                  />
+                  <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-2xl bg-white/5 border border-white/10">
+                    <img
+                      src={artist.image_url || 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400'}
+                      alt={artist.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                   {artist.is_watched && (
                     <div className="absolute -top-2 -right-2 bg-yellow-400 p-1.5 rounded-lg shadow-lg">
                       <Star className="w-4 h-4 text-black fill-current" />
@@ -370,14 +372,14 @@ export default function Artists() {
         </div>
 
         {filteredArtists.length === 0 && (
-          <div className="text-center py-12">
-            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No artists found</h3>
-            <p className="text-gray-600 mb-4">Try adjusting your search criteria or filters.</p>
-            <button className="btn btn-primary">
+          <div className="text-center py-24 bg-white/[0.02] rounded-[40px] border border-dashed border-white/10">
+            <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+            <h3 className="text-2xl font-black text-gray-500 mb-2">No artists found</h3>
+            <p className="text-gray-600 font-medium mb-8">Try adjusting your search criteria or filters.</p>
+            <Button variant="gradient">
               <Plus className="w-4 h-4 mr-2" />
               Add New Artist
-            </button>
+            </Button>
           </div>
         )}
       </div>

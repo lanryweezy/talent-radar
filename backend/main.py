@@ -88,7 +88,10 @@ async def search_artists(query: SearchQuery):
                 **artist,
                 "breakout_score": ai_analysis.get("breakout_score", 0),
                 "genre_confidence": ai_analysis.get("genre_confidence", 0),
-                "trend_direction": ai_analysis.get("trend_direction", "stable")
+                "trend_direction": ai_analysis.get("trend_direction", "stable"),
+                "archetype": ai_analysis.get("archetype"),
+                "strategic_intelligence": ai_analysis.get("strategic_intelligence"),
+                "country": ai_analysis.get("country", "Global")
             }
 
             # Apply filters
@@ -156,6 +159,12 @@ async def get_trending_artists(
             limit=limit
         )
         
+        # Enhance trending results with archetypes
+        for item in trending_data["trending_artists"]:
+             ai_analysis = await ai_service.analyze_artist(item["artist"])
+             item["artist"]["archetype"] = ai_analysis.get("archetype")
+             item["artist"]["breakout_score"] = ai_analysis.get("breakout_score", item["artist"]["breakout_score"])
+
         return trending_data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get trending: {str(e)}")
@@ -165,6 +174,9 @@ async def get_growth_analytics(artist_id: str, days: int = 30):
     """Get artist growth analytics"""
     try:
         growth_data = await analytics_service.get_growth_metrics(artist_id, days)
+        # Add breakout probability from AI service
+        ai_pred = await ai_service.predict_breakout(artist_id)
+        growth_data["breakout_probability"] = ai_pred.get("breakout_probability")
         return growth_data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get analytics: {str(e)}")

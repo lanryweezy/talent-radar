@@ -19,6 +19,9 @@ export interface Artist {
   contract_value: number | null;
   created_at: string;
   updated_at: string;
+  archetype?: string;
+  strategic_intelligence?: string[];
+  country?: string;
 }
 
 export interface Track {
@@ -66,4 +69,7 @@ export interface SearchQuery {
   limit?: number;
   genre?: string;
   region?: string;
+  min_breakout_score?: number;
+  max_breakout_score?: number;
+  min_followers?: number;
 }

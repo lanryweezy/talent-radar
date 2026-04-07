@@ -1,447 +1,242 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { TrendingUp, TrendingDown, BarChart3, PieChart, LineChart, Users, Music, Globe, Zap, Calendar, Filter, Download, ArrowUpRight, Target, Rocket, Activity, MapPin, Eye, Loader2 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  TrendingUp, BarChart3, PieChart, Users, Music, Globe, Zap, Download, Activity, Rocket, Target, ShieldCheck, Flame, ChevronRight, Map, Globe2
+} from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { motion } from 'framer-motion'
 import Navigation from '@/components/enhanced/Navigation'
-import { getTrendingArtists, searchArtists, getMarketHeatmap } from '@/lib/api'
-
-interface AnalyticsData {
-  overview: {
-    totalArtists: number
-    totalTracks: number
-    totalStreams: number
-    avgGrowthRate: number
-    topGenres: Array<{ name: string; count: number; growth: number }>
-    topCountries: Array<{ name: string; count: number; growth: number }>
-  }
-  trends: {
-    weeklyGrowth: number[]
-    monthlyGrowth: number[]
-    genreDistribution: Array<{ genre: string; percentage: number }>
-    platformDistribution: Array<{ platform: string; percentage: number }>
-  }
-  predictions: {
-    nextMonthBreakouts: number
-    emergingGenres: string[]
-    hotMarkets: string[]
-    riskFactors: string[]
-  }
-  topPerformers: Array<{
-    name: string
-    growth: number
-    score: number
-    category: string
-  }>
-}
+import { getMarketHeatmap } from '@/lib/api'
 
 export default function Analytics() {
-  const [data, setData] = useState<AnalyticsData | null>(null)
   const [heatmap, setHeatmap] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('30d')
-  const [selectedMetric, setSelectedMetric] = useState('growth')
 
   useEffect(() => {
-    const fetchHeatmap = async () => {
+    const fetchData = async () => {
       try {
         const hdata = await getMarketHeatmap()
         setHeatmap(hdata)
+        setIsLoading(false)
       } catch (error) {
         console.error(error)
       }
     }
-    fetchHeatmap()
-
-    // Mock analytics data
-    const mockData: AnalyticsData = {
-      overview: {
-        totalArtists: 2400000,
-        totalTracks: 45200000,
-        totalStreams: 892000000000,
-        avgGrowthRate: 23.7,
-        topGenres: [
-          { name: 'Afrobeats', count: 450000, growth: 34.2 },
-          { name: 'Hip Hop', count: 380000, growth: 12.8 },
-          { name: 'Pop', count: 320000, growth: 8.9 },
-          { name: 'R&B', count: 280000, growth: 18.5 },
-          { name: 'Amapiano', count: 190000, growth: 67.3 }
-        ],
-        topCountries: [
-          { name: 'Nigeria', count: 520000, growth: 28.4 },
-          { name: 'United States', count: 480000, growth: 5.2 },
-          { name: 'South Africa', count: 290000, growth: 45.7 },
-          { name: 'Ghana', count: 180000, growth: 38.9 },
-          { name: 'Kenya', count: 120000, growth: 52.1 }
-        ]
-      },
-      trends: {
-        weeklyGrowth: [12.3, 15.7, 18.2, 22.1, 19.8, 25.4, 23.7],
-        monthlyGrowth: [8.2, 12.5, 18.9, 23.7, 28.1, 32.4, 29.8, 35.2, 31.6, 38.9, 42.3, 45.7],
-        genreDistribution: [
-          { genre: 'Afrobeats', percentage: 28.5 },
-          { genre: 'Hip Hop', percentage: 22.3 },
-          { genre: 'Pop', percentage: 18.7 },
-          { genre: 'R&B', percentage: 15.2 },
-          { genre: 'Amapiano', percentage: 8.9 },
-          { genre: 'Others', percentage: 6.4 }
-        ],
-        platformDistribution: [
-          { platform: 'Spotify', percentage: 35.2 },
-          { platform: 'Apple Music', percentage: 28.7 },
-          { platform: 'YouTube Music', percentage: 18.9 },
-          { platform: 'Audiomack', percentage: 12.4 },
-          { platform: 'Boomplay', percentage: 4.8 }
-        ]
-      },
-      predictions: {
-        nextMonthBreakouts: 47,
-        emergingGenres: ['Afro-drill', 'Afro-house', 'Alte', 'Afro-fusion'],
-        hotMarkets: ['Lagos', 'Accra', 'Johannesburg', 'Nairobi', 'London'],
-        riskFactors: ['Market saturation in Pop', 'Declining Hip Hop growth', 'Platform algorithm changes']
-      },
-      topPerformers: [
-        { name: 'Tems', growth: 234.5, score: 98.7, category: 'Breakout Artist' },
-        { name: 'Burna Boy', growth: 45.2, score: 96.3, category: 'Established' },
-        { name: 'Amaarae', growth: 156.7, score: 94.2, category: 'Rising Star' },
-        { name: 'Focalistic', growth: 167.9, score: 89.3, category: 'Genre Leader' },
-        { name: 'Ayra Starr', growth: 198.2, score: 91.8, category: 'Breakout Artist' }
-      ]
-    }
-
-    setTimeout(() => {
-      setData(mockData)
-      setIsLoading(false)
-    }, 1000)
+    fetchData()
   }, [timeRange])
 
-  const formatNumber = (num: number) => {
-    if (num >= 1000000000) return `${(num / 1000000000).toFixed(1)}B`
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
-    return num.toString()
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 text-indigo-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Aggregating Market Data...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!data) return null
+  if (isLoading) return <div className="min-h-screen bg-black flex items-center justify-center"><Activity className="w-12 h-12 text-orange-500 animate-spin" /></div>
 
   return (
-    <div className="min-h-screen bg-[#020617] text-white selection:bg-indigo-500/30">
-      {/* Background Glows */}
+    <div className="min-h-screen bg-black text-white selection:bg-orange-500/30">
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-orange-500/5 blur-[120px]" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px]" />
       </div>
 
-      <Navigation user={{ name: 'Alex Johnson', role: 'A&R Director' }} />
+      <Navigation user={{ name: 'A&R Intelligence', role: 'Lead Strategist' }} />
 
-      {/* Header */}
-      <div className="relative z-10 border-b border-white/10 bg-black/20 backdrop-blur-md pt-20 pb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-end justify-between gap-6">
-            <div>
-              <div className="flex items-center space-x-2 mb-2">
-                <Badge variant="outline" className="bg-indigo-500/10 border-indigo-500/20 text-indigo-400 font-bold uppercase tracking-widest text-[10px]">Macro Intelligence</Badge>
+      {/* Market Pulse Header */}
+      <div className="relative z-10 pt-20 pb-12 border-b border-white/5 bg-black/40 backdrop-blur-3xl">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-end justify-between gap-8">
+            <div className="max-w-2xl">
+              <div className="flex items-center space-x-3 mb-4">
+                <Badge className="bg-orange-500/10 text-orange-400 border-orange-500/20 text-[10px] font-black uppercase tracking-widest px-3 py-1">Macro Intelligence</Badge>
+                <div className="flex items-center text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                  <Globe2 className="w-3 h-3 mr-1" /> Global Coverage
+                </div>
               </div>
-              <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-[0.9]">
-                Market <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Deep Dive.</span>
+              <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.85] mb-6">
+                Market <br />
+                <span className="gradient-text-gold italic">Intelligence Hub.</span>
               </h1>
-              <p className="text-gray-400 mt-4 text-xl font-medium max-w-xl">
-                Global market trends, genre saturation reports, and breakout forecasting.
+              <p className="text-xl text-slate-400 font-medium leading-relaxed">
+                Quantifying global cultural momentum and multi-platform breakout signals.
               </p>
             </div>
-            <div className="flex items-center space-x-4 w-full md:w-auto">
-              <select
-                value={timeRange}
-                onChange={(e) => setTimeRange(e.target.value)}
-                className="flex-1 md:flex-none bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold appearance-none cursor-pointer focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="7d">Last 7 days</option>
-                <option value="30d">Last 30 days</option>
-                <option value="90d">Last 90 days</option>
-                <option value="1y">Last year</option>
+
+            <div className="flex items-center gap-3 p-2 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-3xl w-full md:w-auto">
+              <select className="bg-transparent border-0 text-sm font-black uppercase tracking-widest px-4 focus:ring-0 cursor-pointer">
+                <option value="30d">Last 30 Days</option>
+                <option value="90d">Last 90 Days</option>
               </select>
-              <Button variant="gradient" className="flex-1 md:flex-none py-6 px-8">
+              <Button variant="gradient" className="rounded-xl px-6">
                 <Download className="w-4 h-4 mr-2" />
-                Export Intelligence
+                Export Intel
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
-        {/* Market Heatmap Row */}
-        <div className="mb-12">
-          <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[40px] p-10">
-            <div className="flex items-center justify-between mb-10">
-              <h3 className="text-2xl font-black flex items-center">
-                <Globe className="w-6 h-6 mr-3 text-indigo-400" />
-                Regional Market Heat
-              </h3>
-              <Badge variant="outline" className="text-indigo-400 border-indigo-500/20">Live Intelligence</Badge>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-              {heatmap.map((region) => (
-                <div key={region.id} className="relative group">
-                  <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center hover:bg-white/10 transition-all cursor-help">
-                    <div className="text-2xl mb-1">{region.heat > 0.9 ? '🔥' : region.heat > 0.8 ? '⚡' : '✨'}</div>
-                    <div className="font-black text-white text-xs mb-1 truncate">{region.name}</div>
-                    <div className="text-[10px] font-bold text-indigo-400">{Math.round(region.heat * 100)}%</div>
-
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-48 bg-gray-900 border border-white/10 rounded-xl p-4 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none shadow-2xl">
-                      <div className="text-[10px] font-black uppercase text-gray-500 mb-2">Trending Genres</div>
-                      <div className="flex flex-wrap gap-1">
-                        {region.trending_genres.map((g: string) => (
-                          <Badge key={g} variant="outline" className="text-[8px] py-0 px-1 border-white/5">{g}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+      <div className="max-w-7xl mx-auto px-6 py-16 relative z-10 space-y-12">
+        {/* Heatmap Section */}
+        <section className="glass-card rounded-[40px] p-10 border border-white/5 overflow-hidden">
+          <div className="flex items-center justify-between mb-12">
+             <h3 className="text-xl font-black flex items-center uppercase tracking-widest">
+              <Map className="w-5 h-5 mr-3 text-orange-500" />
+              Regional Cultural Heat
+            </h3>
+            <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[9px] font-black uppercase">Live Updates</Badge>
           </div>
-        </div>
 
-        {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {[
-            { label: 'Total Artists', value: formatNumber(data.overview.totalArtists), icon: Users, color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
-            { label: 'Total Tracks', value: formatNumber(data.overview.totalTracks), icon: Music, color: 'text-purple-400', bg: 'bg-purple-400/10' },
-            { label: 'Total Streams', value: formatNumber(data.overview.totalStreams), icon: BarChart3, color: 'text-green-400', bg: 'bg-green-400/10' },
-            { label: 'Avg Growth', value: `${data.overview.avgGrowthRate}%`, icon: TrendingUp, color: 'text-yellow-400', bg: 'bg-yellow-400/10' }
-          ].map((stat) => (
-            <div key={stat.label} className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/[0.05] transition-all">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{stat.label}</p>
-                  <p className="text-3xl font-black mt-1">{stat.value}</p>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {heatmap.map((region, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ scale: 1.02, y: -4 }}
+                className="p-6 rounded-3xl bg-white/5 border border-white/5 hover:border-orange-500/30 transition-all text-center relative group"
+              >
+                <div className="text-3xl mb-3">{region.heat > 0.9 ? '🔥' : '✨'}</div>
+                <div className="text-sm font-black text-white mb-1">{region.name}</div>
+                <div className="text-[10px] font-black text-orange-500 uppercase tracking-widest">{(region.heat * 100).toFixed(0)}% Momentum</div>
+
+                {/* Micro-hover details */}
+                <div className="absolute inset-0 bg-slate-950/95 opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl flex flex-col items-center justify-center p-4 border border-orange-500/50">
+                   <div className="text-[9px] font-black text-slate-500 uppercase mb-2">Trending</div>
+                   <div className="flex flex-wrap justify-center gap-1">
+                     {region.trending_genres?.map((g: string) => (
+                       <span key={g} className="text-[8px] font-bold bg-white/10 px-2 py-0.5 rounded-full">{g}</span>
+                     ))}
+                   </div>
                 </div>
-                <div className={`w-12 h-12 ${stat.bg} rounded-xl flex items-center justify-center`}>
-                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* Global Metrics Row */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+           {[
+            { label: 'Market Reach', value: '2.4B+', change: '+12%', icon: Users, color: 'text-blue-400' },
+            { label: 'Discovery Depth', value: '45.2M', change: '+34k', icon: Music, color: 'text-purple-400' },
+            { label: 'Growth Velocity', value: '+23.7%', change: 'Accelerating', icon: Zap, color: 'text-orange-400' },
+            { label: 'Forecast Accuracy', value: '96.4%', change: 'High', icon: ShieldCheck, color: 'text-emerald-400' }
+          ].map((stat, i) => (
+            <div key={i} className="glass-card rounded-3xl p-8 border border-white/5">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center">
+                  <stat.icon className={`w-5 h-5 ${stat.color}`} />
                 </div>
+                <div className="text-[9px] font-black text-emerald-400">{stat.change}</div>
               </div>
+              <div className="text-2xl font-black text-white">{stat.value}</div>
+              <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">{stat.label}</div>
             </div>
           ))}
         </div>
 
-        {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          {/* Growth Trends */}
-          <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[40px] p-10">
-            <div className="flex items-center justify-between mb-10">
-              <h3 className="text-2xl font-black flex items-center">
-                <Activity className="w-6 h-6 mr-3 text-indigo-400" />
-                Growth Velocity
-              </h3>
-              <div className="flex bg-white/5 p-1 rounded-xl">
-                <button onClick={() => setSelectedMetric('growth')} className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${selectedMetric === 'growth' ? 'bg-indigo-600 text-white' : 'text-gray-500'}`}>Velocity</button>
-                <button onClick={() => setSelectedMetric('streams')} className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${selectedMetric === 'streams' ? 'bg-indigo-600 text-white' : 'text-gray-500'}`}>Volume</button>
-              </div>
-            </div>
-            <div className="h-64 flex items-end space-x-3">
-              {data.trends.monthlyGrowth.map((value, index) => (
-                <div key={index} className="flex-1 bg-white/5 rounded-2xl relative group">
-                  <div
-                    className="bg-gradient-to-t from-indigo-600 to-purple-600 rounded-2xl transition-all duration-700"
-                    style={{ height: `${(value / Math.max(...data.trends.monthlyGrowth)) * 100}%` }}
-                  ></div>
-                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-indigo-600 text-white px-2 py-1 rounded text-[10px] font-black">
-                    {value}%
-                  </div>
+        {/* Intelligence Split View */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <Card className="bg-white/5 border-white/10 rounded-[40px] p-10 overflow-hidden">
+             <h3 className="text-xl font-black mb-10 flex items-center uppercase tracking-widest">
+              <Activity className="w-5 h-5 mr-3 text-orange-500" />
+              Velocity Trends
+            </h3>
+            <div className="h-64 flex items-end space-x-2">
+              {[60, 45, 80, 55, 90, 70, 85, 40, 75, 95, 65, 88].map((h, i) => (
+                <div key={i} className="flex-1 bg-white/5 rounded-t-xl relative group">
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: `${h}%` }}
+                    transition={{ duration: 1, delay: i * 0.05 }}
+                    className="w-full bg-gradient-to-t from-orange-600 to-amber-400 rounded-t-xl"
+                  />
                 </div>
               ))}
             </div>
-          </div>
+            <div className="flex justify-between mt-6 px-2">
+               {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
+                 <span key={m} className="text-[9px] font-black text-slate-600 uppercase">{m}</span>
+               ))}
+            </div>
+          </Card>
 
-          {/* Genre Distribution */}
-          <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[40px] p-10">
-            <h3 className="text-2xl font-black mb-10 flex items-center">
-              <PieChart className="w-6 h-6 mr-3 text-purple-400" />
+          <Card className="bg-white/5 border-white/10 rounded-[40px] p-10">
+             <h3 className="text-xl font-black mb-10 flex items-center uppercase tracking-widest">
+              <PieChart className="w-5 h-5 mr-3 text-blue-500" />
               Market Composition
             </h3>
             <div className="space-y-6">
-              {data.trends.genreDistribution.map((genre, index) => (
-                <div key={genre.genre}>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-black uppercase tracking-widest text-gray-500">{genre.genre}</span>
-                    <span className="text-xs font-black text-indigo-400">{genre.percentage}%</span>
+              {[
+                { label: 'Afrobeats', value: 34, color: 'bg-orange-500' },
+                { label: 'Amapiano', value: 28, color: 'bg-blue-500' },
+                { label: 'Latin', value: 22, color: 'bg-rose-500' },
+                { label: 'K-Pop', value: 16, color: 'bg-purple-500' }
+              ].map((g, i) => (
+                <div key={i}>
+                   <div className="flex justify-between items-center mb-2">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{g.label}</span>
+                    <span className="text-xs font-black text-white">{g.value}%</span>
                   </div>
-                  <div className="bg-white/5 rounded-full h-3">
-                    <div
-                      className={`h-3 rounded-full transition-all duration-500 bg-gradient-to-r ${
-                        index === 0 ? 'from-indigo-600 to-indigo-400' :
-                        index === 1 ? 'from-purple-600 to-purple-400' :
-                        'from-gray-600 to-gray-400'
-                      }`}
-                      style={{ width: `${genre.percentage}%` }}
-                    ></div>
+                  <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${g.value}%` }}
+                      className={`h-full ${g.color}`}
+                    />
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
         </div>
 
-        {/* Top Performers and Predictions */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-          {/* Top Genres */}
-          <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[40px] p-10">
-            <h3 className="text-xl font-black mb-8 uppercase tracking-widest text-gray-500 text-sm">Top Genres</h3>
-            <div className="space-y-6">
-              {data.overview.topGenres.map((genre, index) => (
-                <div key={genre.name} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 font-black">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <div className="font-bold text-white">{genre.name}</div>
-                      <div className="text-xs text-gray-500">{formatNumber(genre.count)} nodes</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-black text-green-400">+{genre.growth}%</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Top Countries */}
-          <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[40px] p-10">
-            <h3 className="text-xl font-black mb-8 uppercase tracking-widest text-gray-500 text-sm">Active Markets</h3>
-            <div className="space-y-6">
-              {data.overview.topCountries.map((country, index) => (
-                <div key={country.name} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center text-green-400 font-black">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <div className="font-bold text-white">{country.name}</div>
-                      <div className="text-xs text-gray-500">{formatNumber(country.count)} creators</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-black text-green-400">+{country.growth}%</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* AI Predictions */}
-          <div className="bg-indigo-600/10 border border-indigo-500/20 rounded-[40px] p-10">
-            <h3 className="text-xl font-black mb-8 uppercase tracking-widest text-indigo-400 text-sm flex items-center">
-              <Zap className="w-4 h-4 mr-2" />
-              AI Forecasting
-            </h3>
-            <div className="space-y-8">
-              <div>
-                <div className="text-4xl font-black text-white">{data.predictions.nextMonthBreakouts}</div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mt-1">Predicted Breakouts (30d)</div>
-              </div>
-
-              <div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-3">Emerging Genres</div>
-                <div className="flex flex-wrap gap-2">
-                  {data.predictions.emergingGenres.map(genre => (
-                    <Badge key={genre} variant="outline" className="bg-white/5 border-white/10 text-indigo-400">
-                      {genre}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-3">Priority Markets</div>
-                <div className="flex flex-wrap gap-2">
-                  {data.predictions.hotMarkets.map(market => (
-                    <Badge key={market} variant="outline" className="bg-white/5 border-white/10 text-green-400">
-                      {market}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Top Performers */}
-        <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[40px] overflow-hidden">
-          <div className="p-10 border-b border-white/10">
-            <h3 className="text-2xl font-black flex items-center">
-              <Rocket className="w-6 h-6 mr-3 text-indigo-400" />
-              High Velocity Creators
+        {/* High Performance Table */}
+        <section className="glass-card rounded-[40px] overflow-hidden border border-white/5">
+           <div className="p-10 border-b border-white/5">
+             <h3 className="text-xl font-black flex items-center uppercase tracking-widest">
+              <Flame className="w-5 h-5 mr-3 text-orange-500" />
+              High Velocity Nodes
             </h3>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full">
+             <table className="w-full">
               <thead>
                 <tr className="bg-white/5">
-                  <th className="text-left py-6 px-10 text-[10px] font-black uppercase tracking-widest text-gray-500">Artist</th>
-                  <th className="text-left py-6 px-10 text-[10px] font-black uppercase tracking-widest text-gray-500">Category</th>
-                  <th className="text-left py-6 px-10 text-[10px] font-black uppercase tracking-widest text-gray-500">Velocity</th>
-                  <th className="text-left py-6 px-10 text-[10px] font-black uppercase tracking-widest text-gray-500">Score</th>
-                  <th className="text-left py-6 px-10 text-[10px] font-black uppercase tracking-widest text-gray-500">Trend</th>
+                  <th className="text-left py-6 px-10 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Node Identity</th>
+                  <th className="text-left py-6 px-10 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Archetype</th>
+                  <th className="text-left py-6 px-10 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Acceleration</th>
+                  <th className="text-left py-6 px-10 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Intelligence Score</th>
                 </tr>
               </thead>
               <tbody>
-                {data.topPerformers.map((performer, index) => (
-                  <tr key={performer.name} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                {[
+                  { name: 'Tems', archetype: 'Global Crossover', growth: '+234%', score: 98.7 },
+                  { name: 'Ayra Starr', archetype: 'Street Viral', growth: '+198%', score: 94.2 },
+                  { name: 'Rema', archetype: 'Global Crossover', growth: '+156%', score: 96.3 },
+                  { name: 'Asake', archetype: 'Street Viral', growth: '+187%', score: 92.8 }
+                ].map((n, i) => (
+                  <tr key={i} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
                     <td className="py-6 px-10">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-black">
-                          {index + 1}
-                        </div>
-                        <span className="font-bold text-white text-lg">{performer.name}</span>
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-xs font-black text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-all">0{i+1}</div>
+                        <span className="font-black text-white">{n.name}</span>
                       </div>
                     </td>
                     <td className="py-6 px-10">
-                      <Badge variant="outline" className="bg-white/5 border-white/10 text-indigo-400 uppercase tracking-widest text-[10px] font-black">
-                        {performer.category}
-                      </Badge>
+                       <Badge className="bg-blue-500/10 text-blue-400 border-0 text-[8px] font-black uppercase tracking-widest">{n.archetype}</Badge>
                     </td>
+                    <td className="py-6 px-10 font-black text-emerald-400">{n.growth}</td>
                     <td className="py-6 px-10">
-                      <span className="text-green-400 font-black">+{performer.growth}%</span>
-                    </td>
-                    <td className="py-6 px-10">
-                      <div className="flex items-center space-x-4">
-                        <span className="font-black text-white">{performer.score}</span>
-                        <div className="w-24 bg-white/5 rounded-full h-2">
-                          <div
-                            className="bg-gradient-to-r from-indigo-600 to-indigo-400 h-2 rounded-full"
-                            style={{ width: `${performer.score}%` }}
-                          ></div>
+                       <div className="flex items-center gap-4">
+                        <span className="font-black text-white">{n.score}</span>
+                        <div className="w-24 h-1 bg-white/5 rounded-full overflow-hidden">
+                           <div className="h-full bg-orange-500" style={{ width: `${n.score}%` }} />
                         </div>
-                      </div>
-                    </td>
-                    <td className="py-6 px-10">
-                      <TrendingUp className="w-6 h-6 text-green-400" />
+                       </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
-            </table>
+             </table>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   )

@@ -52,9 +52,9 @@ export default function Navigation({ user }: NavigationProps) {
   const navigationItems = [
     { href: '/dashboard', label: 'Intelligence', icon: BarChart3 },
     { href: '/discover', label: 'Discover', icon: Search },
-    { href: '/analytics', label: 'Market', icon: TrendingUp },
-    { href: '/compare', label: 'Compare', icon: Zap },
-    { href: '/artists', label: 'Roster', icon: Users },
+    { href: '/analytics', label: 'Market Analytics', icon: TrendingUp },
+    { href: '/compare', label: 'Artist Compare', icon: Zap },
+    { href: '/artists', label: 'Artist Roster', icon: Users },
   ]
 
   const isActive = (href: string) => pathname === href

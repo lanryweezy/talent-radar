@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, TrendingUp, Users, Music, Globe, Star, ArrowRight, Play, BarChart3, Mail, CheckCircle, MapPin, Calendar, Video, Sparkles, Target, Rocket } from 'lucide-react'
+import { Zap, TrendingUp, Users, Music, Globe, Star, ArrowRight, Play, BarChart3, Mail, CheckCircle, MapPin, Calendar, Video, Sparkles, Target, Rocket, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
-import { Modal } from '@/components/ui/Modal'
 import WaitlistModal from '@/components/WaitlistModal'
 
 export default function Home() {
@@ -17,13 +15,10 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [selectedRegion, setSelectedRegion] = useState('global')
   const [showWaitlistModal, setShowWaitlistModal] = useState(false)
-  const [currentTestimonial, setCurrentTestimonial] = useState(0)
 
   const handleWaitlistSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
-    // Simulate API call
     setTimeout(() => {
       setIsSubmitted(true)
       setIsLoading(false)
@@ -39,531 +34,175 @@ export default function Home() {
     europe: { artists: '420K+', countries: '44', languages: '12+', regions: 'European Union+' }
   }
 
-  const testimonials = [
-    {
-      name: 'Kemi Adeleke',
-      role: 'A&R Director, Lagos',
-      flag: '🇳🇬',
-      quote: "TalentRadar helped us discover 3 breakout Afrobeats artists before they went viral. The AI predictions are incredibly accurate for the African market.",
-      gradient: 'from-green-500 to-blue-500'
-    },
-    {
-      name: 'Li Wei',
-      role: 'Music Executive, Beijing',
-      flag: '🇨🇳',
-      quote: "Finally, a platform that understands Chinese music culture and can predict crossover potential. Game-changing for our international expansion.",
-      gradient: 'from-red-500 to-yellow-500'
-    },
-    {
-      name: 'James Morrison',
-      role: 'Head of A&R, London',
-      flag: '🇬🇧',
-      quote: "The global perspective is unmatched. We're now signing talent from markets we never would have discovered otherwise. Brilliant platform.",
-      gradient: 'from-blue-500 to-purple-500'
-    }
-  ]
-
   const currentStats = globalStats[selectedRegion as keyof typeof globalStats] || globalStats.global
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
-    }, 5000)
-    return () => clearInterval(interval)
-  }, [])
-
   return (
-    <div className="min-h-screen bg-[#020617] relative overflow-hidden selection:bg-indigo-500/30 selection:text-indigo-200">
-      {/* Mesh Gradient Background */}
+    <div className="min-h-screen bg-black relative overflow-hidden selection:bg-orange-500/30">
+      {/* Precision Background */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/20 blur-[120px] animate-pulse" />
-        <div className="absolute top-[20%] right-[-5%] w-[35%] h-[35%] rounded-full bg-purple-600/20 blur-[100px] animate-pulse delay-700" />
-        <div className="absolute bottom-[-10%] left-[20%] w-[45%] h-[45%] rounded-full bg-blue-600/10 blur-[150px] animate-pulse delay-1000" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-orange-600/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-600/10 blur-[120px]" />
       </div>
 
-      {/* Grid Pattern */}
-      <div className="absolute inset-0 z-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] pointer-events-none" />
-      <div className="absolute inset-0 z-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:100px_100px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+      {/* Grid Pattern Overlay */}
+      <div className="absolute inset-0 z-0 opacity-[0.05] grid-overlay pointer-events-none" />
+
+      {/* Navigation */}
+      <nav className="relative z-50 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto">
+        <div className="flex items-center space-x-2">
+          <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+            <Zap className="w-6 h-6 text-white fill-current" />
+          </div>
+          <span className="text-2xl font-black text-white tracking-tighter">TALENTRADAR</span>
+        </div>
+        <div className="hidden md:flex items-center space-x-8 text-sm font-bold text-slate-400">
+          <Link href="/dashboard" className="hover:text-white transition-colors">Intelligence</Link>
+          <Link href="/analytics" className="hover:text-white transition-colors">Market Pulse</Link>
+          <Link href="/discover" className="hover:text-white transition-colors">Discovery</Link>
+        </div>
+        <Link href="/dashboard">
+          <Button variant="gradient" className="rounded-full px-6 py-2 text-sm font-bold">
+            Launch Console
+          </Button>
+        </Link>
+      </nav>
 
       {/* Hero Section */}
-      <div className="relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center">
-            {/* Global Badge */}
+      <div className="relative z-10 pt-20 pb-32">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="max-w-4xl">
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-6 py-3 rounded-full text-sm font-bold mb-8 shadow-lg"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="inline-flex items-center space-x-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full mb-8"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
-              GLOBAL LAUNCH • CONNECTING A&R WORLDWIDE
-              <Rocket className="w-4 h-4 ml-2" />
+              <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+              <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">Global A&R Intelligence Engine v2.0</span>
             </motion.div>
 
-            {/* Logo */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="flex items-center justify-center mb-8"
-            >
-              <div className="w-24 h-24 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-3xl flex items-center justify-center shadow-2xl">
-                <Zap className="w-12 h-12 text-white" />
-              </div>
-              <span className="ml-6 text-6xl font-bold text-white">TalentRadar</span>
-            </motion.div>
-
-            {/* Headline */}
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="text-5xl md:text-8xl font-black text-white mb-8 tracking-tighter leading-[0.9]"
+              transition={{ delay: 0.1 }}
+              className="text-6xl md:text-8xl font-black text-white mb-8 tracking-tighter leading-[0.85]"
             >
-              Discover the
-              <br />
-              <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent italic">
-                Unheard.
-              </span>
+              The Science of <br />
+              <span className="gradient-text-premium italic">Global Discovery.</span>
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed"
+              transition={{ delay: 0.2 }}
+              className="text-xl text-slate-400 mb-10 max-w-2xl leading-relaxed font-medium"
             >
-              🌍 Discover emerging talent from <strong>every continent</strong> • 
-              🤖 AI-powered predictions with <strong>94% accuracy</strong> • 
-              🚀 Connect with A&R professionals <strong>worldwide</strong> • 
-              🎵 From Lagos to London, Seoul to São Paulo
+              Quantifying cultural momentum across 150+ countries.
+              Identify emerging breakout talent with our proprietary Talent Score™ and multi-platform velocity tracking.
             </motion.p>
 
-            {/* Waitlist Form */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
-              className="max-w-md mx-auto mb-12"
+              transition={{ delay: 0.3 }}
+              className="flex flex-col sm:flex-row gap-4 mb-20"
             >
-              {!isSubmitted ? (
-                <form onSubmit={handleWaitlistSignup} className="flex flex-col sm:flex-row gap-4">
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email for early access"
-                    className="flex-1 text-lg py-4"
-                    required
-                  />
-                  <Button
-                    type="submit"
-                    variant="gradient"
-                    size="lg"
-                    loading={isLoading}
-                    className="whitespace-nowrap shadow-xl"
-                  >
-                    {isLoading ? 'Joining...' : 'Join Waitlist'}
-                  </Button>
-                </form>
-              ) : (
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="bg-green-500 text-white px-6 py-4 rounded-xl flex items-center justify-center shadow-xl"
-                >
-                  <CheckCircle className="w-6 h-6 mr-3" />
-                  <span className="font-bold">Welcome to the future of A&R! Check your email.</span>
-                </motion.div>
-              )}
-              <p className="text-gray-400 text-sm mt-3">
-                🎁 Early access • 🎬 Exclusive demo • 🌟 Founding member benefits
-              </p>
-            </motion.div>
-
-            {/* CTA Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.0 }}
-              className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-24"
-            >
-              <Button
-                variant="glow"
-                size="lg"
-                onClick={() => setShowWaitlistModal(true)}
-                className="w-full sm:w-auto px-10 py-8 text-xl"
-              >
-                <Video className="w-6 h-6 mr-3" />
-                Watch Demo
-                <ArrowRight className="w-6 h-6 ml-3" />
-              </Button>
               <Link href="/dashboard">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full sm:w-auto px-10 py-8 text-xl"
-                >
-                  <Play className="w-6 h-6 mr-3" />
-                  Enter App
+                <Button size="lg" variant="gradient" className="px-10 py-7 text-lg font-black group">
+                  Get Started
+                  <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-            </motion.div>
-
-            {/* Global Stats Selector */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2 }}
-            >
-              <Card variant="glass" className="max-w-4xl mx-auto">
-                <CardContent className="pt-8 pb-8">
-                  <h3 className="text-2xl font-bold text-white mb-6">Choose Your Region</h3>
-                  <div className="flex flex-wrap justify-center gap-4 mb-10">
-                    {[
-                      { key: 'global', label: 'Global', flag: '🌍' },
-                      { key: 'africa', label: 'Africa', flag: '🇳🇬' },
-                      { key: 'asia', label: 'Asia', flag: '🇨🇳' },
-                      { key: 'americas', label: 'Americas', flag: '🇺🇸' },
-                      { key: 'europe', label: 'Europe', flag: '🇬🇧' }
-                    ].map(region => (
-                      <motion.button
-                        key={region.key}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setSelectedRegion(region.key)}
-                        className={`px-8 py-4 rounded-2xl font-bold transition-all duration-300 flex items-center space-x-2 ${
-                          selectedRegion === region.key
-                            ? 'bg-white text-black shadow-[0_0_40px_rgba(255,255,255,0.2)]'
-                            : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'
-                        }`}
-                      >
-                        <span>{region.flag}</span>
-                        <span>{region.label}</span>
-                      </motion.button>
-                    ))}
-                  </div>
-                  
-                  <motion.div
-                    key={selectedRegion}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center"
-                  >
-                    <div>
-                      <div className="text-3xl font-bold text-white mb-2">{currentStats.artists}</div>
-                      <div className="text-gray-300">Artists Tracked</div>
-                    </div>
-                    <div>
-                      <div className="text-3xl font-bold text-white mb-2">{currentStats.countries}</div>
-                      <div className="text-gray-300">Countries</div>
-                    </div>
-                    <div>
-                      <div className="text-3xl font-bold text-white mb-2">{currentStats.languages}</div>
-                      <div className="text-gray-300">Languages</div>
-                    </div>
-                    <div>
-                      <div className="text-3xl font-bold text-white mb-2">24/7</div>
-                      <div className="text-gray-300">Global Coverage</div>
-                    </div>
-                  </motion.div>
-                </CardContent>
-              </Card>
+              <Button size="lg" variant="outline" className="px-10 py-7 text-lg font-black border-white/10 hover:bg-white/5" onClick={() => setShowWaitlistModal(true)}>
+                Watch Intelligence Demo
+              </Button>
             </motion.div>
           </div>
-        </div>
-      </div>
 
-      {/* Global Features Section */}
-      <div className="py-24 bg-black bg-opacity-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Metrics Grid */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 glass-card rounded-3xl border border-white/10"
           >
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
-              🌍 Built for the Global Music Industry
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              From Afrobeats in Lagos to K-Pop in Seoul, Reggaeton in Medellín to Drill in London - 
-              we track talent everywhere music is made
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              {
-                icon: Globe,
-                title: '🌍 Global Discovery Engine',
-                description: 'Track emerging talent across 150+ countries. From Nigerian Afrobeats to Chinese Hip-Hop, discover the next global superstars before they break worldwide.',
-                gradient: 'from-blue-500/20 to-purple-500/20',
-                hoverGradient: 'from-blue-500/30 to-purple-500/30',
-                iconGradient: 'from-blue-500 to-purple-500'
-              },
-              {
-                icon: TrendingUp,
-                title: '🤖 Multi-Language AI',
-                description: 'Our AI understands 50+ languages and cultural contexts. Analyze lyrics in Yoruba, Mandarin, Spanish, Arabic, and more with native-level comprehension.',
-                gradient: 'from-green-500/20 to-blue-500/20',
-                hoverGradient: 'from-green-500/30 to-blue-500/30',
-                iconGradient: 'from-green-500 to-blue-500'
-              },
-              {
-                icon: MapPin,
-                title: '🗺️ Regional Expertise',
-                description: 'Deep knowledge of local markets, cultural trends, and regional platforms. From Boomplay in Africa to QQ Music in China.',
-                gradient: 'from-purple-500/20 to-pink-500/20',
-                hoverGradient: 'from-purple-500/30 to-pink-500/30',
-                iconGradient: 'from-purple-500 to-pink-500'
-              },
-              {
-                icon: Users,
-                title: '🤝 A&R Network',
-                description: 'Connect with A&R professionals worldwide. Share discoveries, collaborate on signings, and build the future of global music together.',
-                gradient: 'from-yellow-500/20 to-orange-500/20',
-                hoverGradient: 'from-yellow-500/30 to-orange-500/30',
-                iconGradient: 'from-yellow-500 to-orange-500'
-              },
-              {
-                icon: Star,
-                title: '🔄 Real-Time Translation',
-                description: 'Instant translation of artist bios, social media content, and market insights. Break down language barriers in the global music industry.',
-                gradient: 'from-red-500/20 to-pink-500/20',
-                hoverGradient: 'from-red-500/30 to-pink-500/30',
-                iconGradient: 'from-red-500 to-pink-500'
-              },
-              {
-                icon: BarChart3,
-                title: '🎭 Cultural Intelligence',
-                description: 'Understand cultural contexts, local trends, and regional preferences. Make informed decisions with deep cultural insights.',
-                gradient: 'from-indigo-500/20 to-purple-500/20',
-                hoverGradient: 'from-indigo-500/30 to-purple-500/30',
-                iconGradient: 'from-indigo-500 to-purple-500'
-              }
-            ].map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -5 }}
-              >
-                <Card
-                  variant="glass"
-                  className={`bg-gradient-to-br ${feature.gradient} hover:${feature.hoverGradient} transition-all duration-300 border border-white/10 h-full`}
-                >
-                  <CardContent className="pt-8 pb-8">
-                    <div className={`w-12 h-12 bg-gradient-to-r ${feature.iconGradient} rounded-lg flex items-center justify-center mb-6`}>
-                      <feature.icon className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-4">{feature.title}</h3>
-                    <p className="text-gray-300 leading-relaxed">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Animated Testimonials */}
-      <div className="py-24 bg-black bg-opacity-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Trusted by A&R Professionals Worldwide
-            </h2>
-          </motion.div>
-
-          <div className="max-w-4xl mx-auto">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentTestimonial}
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -50 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Card variant="glass" className="text-center">
-                  <CardContent className="pt-12 pb-12">
-                    <div className={`w-16 h-16 bg-gradient-to-r ${testimonials[currentTestimonial].gradient} rounded-full flex items-center justify-center text-2xl mx-auto mb-6`}>
-                      {testimonials[currentTestimonial].flag}
-                    </div>
-                    <blockquote className="text-xl text-gray-300 italic mb-6 max-w-2xl mx-auto">
-                      "{testimonials[currentTestimonial].quote}"
-                    </blockquote>
-                    <div className="font-bold text-white text-lg">
-                      {testimonials[currentTestimonial].name}
-                    </div>
-                    <div className="text-gray-400">
-                      {testimonials[currentTestimonial].role}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Testimonial Indicators */}
-            <div className="flex justify-center mt-8 space-x-2">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentTestimonial(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                    index === currentTestimonial
-                      ? 'bg-gradient-to-r from-yellow-400 to-orange-500'
-                      : 'bg-white/30 hover:bg-white/50'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Launch Timeline */}
-      <div className="py-24 bg-gradient-to-r from-purple-900 to-indigo-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-bold text-white mb-12"
-          >
-            🚀 Global Launch Timeline
-          </motion.h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                phase: 'Phase 1: Beta Launch',
-                date: 'Q1 2024 • Invite-only access',
-                features: ['✅ Core A&R features', '✅ 50+ countries coverage', '✅ AI predictions v1.0'],
-                icon: Calendar,
-                gradient: 'from-green-500 to-blue-500',
-                ring: false
-              },
-              {
-                phase: 'Phase 2: Global Launch',
-                date: 'Q2 2024 • Public access',
-                features: ['🚀 150+ countries', '🚀 Multi-language support', '🚀 A&R network features'],
-                icon: Star,
-                gradient: 'from-yellow-400 to-orange-500',
-                ring: true
-              },
-              {
-                phase: 'Phase 3: Enterprise',
-                date: 'Q3 2024 • Major labels',
-                features: ['🎯 Custom integrations', '🎯 Advanced analytics', '🎯 White-label solutions'],
-                icon: Target,
-                gradient: 'from-purple-500 to-pink-500',
-                ring: false
-              }
-            ].map((timeline, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.2 }}
-                whileHover={{ y: -5 }}
-              >
-                <Card
-                  variant="glass"
-                  className={`${timeline.ring ? 'ring-2 ring-yellow-400' : ''} transition-all duration-300`}
-                >
-                  <CardContent className="pt-8 pb-8">
-                    <div className={`w-16 h-16 bg-gradient-to-r ${timeline.gradient} rounded-full flex items-center justify-center mx-auto mb-4`}>
-                      <timeline.icon className="w-8 h-8 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2">{timeline.phase}</h3>
-                    <p className="text-gray-300 mb-4">{timeline.date}</p>
-                    <ul className="text-gray-300 text-sm space-y-1">
-                      {timeline.features.map((feature, featureIndex) => (
-                        <li key={featureIndex}>{feature}</li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Final CTA */}
-      <div className="py-16 bg-black bg-opacity-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Ready to Discover the World's Next Superstars?
-            </h2>
-            <p className="text-xl text-gray-300 mb-8">
-              Join thousands of A&R professionals who are already using TalentRadar to find global talent
-            </p>
-            
-            {!isSubmitted && (
-              <div className="max-w-md mx-auto mb-8">
-                <form onSubmit={handleWaitlistSignup} className="flex flex-col sm:flex-row gap-4">
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Your email address"
-                    className="flex-1 text-lg py-4"
-                    required
-                  />
-                  <Button
-                    type="submit"
-                    variant="gradient"
-                    size="lg"
-                    loading={isLoading}
-                    className="whitespace-nowrap"
-                  >
-                    {isLoading ? 'Joining...' : 'Get Early Access'}
-                  </Button>
-                </form>
+              { label: 'Artists Tracked', value: '2.4M+', detail: 'Global Coverage' },
+              { label: 'Breakout Accuracy', value: '94%', detail: 'AI Confidence' },
+              { label: 'Data Points', value: '450B', detail: 'Real-time ingestion' },
+              { label: 'Market Signals', value: '150+', detail: 'Cultural Indicators' }
+            ].map((stat, i) => (
+              <div key={i} className="p-6 border-r border-white/5 last:border-0">
+                <div className="text-3xl font-black text-white mb-1">{stat.value}</div>
+                <div className="text-xs font-bold text-orange-400 uppercase tracking-widest mb-1">{stat.label}</div>
+                <div className="text-[10px] text-slate-500 font-medium">{stat.detail}</div>
               </div>
-            )}
-
-            <p className="text-gray-400">
-              🌍 Global launch • 🎁 Founding member benefits • 🚀 Shape the future of A&R
-            </p>
+            ))}
           </motion.div>
+        </div>
+      </div>
+
+      {/* Feature Section - Tighter & More Professional */}
+      <div className="py-32 relative">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-end justify-between mb-20 gap-8">
+            <div className="max-w-2xl">
+              <h2 className="text-xs font-black text-orange-500 uppercase tracking-[0.3em] mb-4">Core Intelligence</h2>
+              <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter">Engineered for the Modern A&R.</h3>
+            </div>
+            <p className="text-slate-400 font-medium max-w-sm mb-2">
+              Our infrastructure processes billions of signals to identify talent before the algorithm does.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                title: 'Talent Score™',
+                desc: 'Proprietary weighted formula calculating growth, engagement, and cross-platform virality.',
+                icon: Rocket
+              },
+              {
+                title: 'Cultural Archetyping',
+                desc: 'AI-driven categorization of artists based on sonic profile and audience demographics.',
+                icon: Target
+              },
+              {
+                title: 'Market Heatmaps',
+                desc: 'Visualize regional breakthroughs and identify underserved musical markets globally.',
+                icon: Globe
+              }
+            ].map((f, i) => (
+              <div key={i} className="glass-card p-10 rounded-3xl border border-white/5 hover:border-orange-500/20 transition-all group">
+                <div className="w-14 h-14 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-orange-500/20 transition-colors">
+                  <f.icon className="w-7 h-7 text-orange-500" />
+                </div>
+                <h4 className="text-xl font-black text-white mb-4">{f.title}</h4>
+                <p className="text-slate-400 leading-relaxed text-sm font-medium">{f.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="py-8 bg-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="flex items-center mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center mr-3">
-                <Zap className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-white font-bold text-xl">TalentRadar</span>
+      <footer className="py-20 border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-10">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+              <Zap className="w-5 h-5 text-white fill-current" />
             </div>
-            <div className="text-gray-400 text-center md:text-right">
-              <p>© 2024 TalentRadar • Built for the global music industry</p>
-              <p className="text-sm mt-1">
-                🇳🇬 Made with love in Nigeria • 🇨🇳 Powered by global innovation • 🌍 For the world
-              </p>
-            </div>
+            <span className="text-lg font-black text-white tracking-tighter">TALENTRADAR</span>
+          </div>
+          <p className="text-slate-500 text-sm font-medium">
+            © 2024 Global Intelligence. Built for the Next Billion Streams.
+          </p>
+          <div className="flex space-x-6 text-slate-400">
+            <Link href="#" className="hover:text-white transition-colors font-bold text-xs">Terms</Link>
+            <Link href="#" className="hover:text-white transition-colors font-bold text-xs">Privacy</Link>
+            <Link href="#" className="hover:text-white transition-colors font-bold text-xs">API Documentation</Link>
           </div>
         </div>
-      </div>
+      </footer>
 
       {/* Waitlist Modal */}
       <WaitlistModal

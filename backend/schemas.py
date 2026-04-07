@@ -30,6 +30,11 @@ class ArtistResponse(BaseModel):
     trend_direction: str
     genre_confidence: float
     
+    # Next-Gen Metrics
+    archetype: Optional[str] = None
+    strategic_intelligence: Optional[List[str]] = None
+    country: Optional[str] = None
+
     # Label Management (CRM) fields
     status: Optional[str] = "available"
     is_watched: Optional[bool] = False
@@ -69,29 +74,6 @@ class TrackResponse(BaseModel):
     
     release_date: Optional[datetime]
 
-class MetricsResponse(BaseModel):
-    artist_id: str
-    spotify_monthly_listeners: int
-    spotify_followers: int
-    youtube_subscribers: int
-    youtube_views: int
-    instagram_followers: int
-    tiktok_followers: int
-    
-    avg_streams_per_track: float
-    engagement_rate: float
-    skip_rate: float
-    replay_rate: float
-    
-    top_countries: List[str]
-    growth_regions: List[str]
-    
-    momentum_score: float
-    engagement_quality: float
-    market_penetration: float
-    
-    recorded_at: datetime
-
 class TrendingArtistItem(BaseModel):
     artist: ArtistResponse
     trend_score: float
@@ -106,89 +88,9 @@ class TrendingResponse(BaseModel):
     trending_artists: List[TrendingArtistItem]
     generated_at: datetime
 
-class GrowthAnalytics(BaseModel):
-    artist_id: str
-    period_days: int
-    
-    # Growth metrics
-    follower_growth: float
-    stream_growth: float
-    engagement_growth: float
-    
-    # Trend data
-    daily_metrics: List[Dict[str, Any]]
-    growth_rate: float
-    acceleration: float
-    
-    # Predictions
-    projected_followers_30d: int
-    projected_streams_30d: int
-    confidence_score: float
-
-class BreakoutPrediction(BaseModel):
-    artist_id: str
-    breakout_probability: float
-    confidence_level: str  # low, medium, high
-    
-    # Contributing factors
-    factors: Dict[str, float]
-    timeline_estimate: str  # "1-3 months", "3-6 months", etc.
-    
-    # Recommendations
-    recommendations: List[str]
-    risk_factors: List[str]
-
-class SimilarArtist(BaseModel):
-    artist: ArtistResponse
-    similarity_score: float
-    similarity_reasons: List[str]
-
-class AlertResponse(BaseModel):
-    id: int
-    artist_id: str
-    alert_type: str
-    title: str
-    message: str
-    triggered_at: Optional[datetime]
-    is_active: bool
-    created_at: datetime
-
-class CollaborationNetwork(BaseModel):
-    artist_id: str
-    collaborators: List[Dict[str, Any]]
-    network_strength: float
-    cluster_info: Dict[str, Any]
-
-# Request schemas
 class ArtistStatusUpdate(BaseModel):
     status: Optional[str] = None
     is_watched: Optional[bool] = None
     notes: Optional[str] = None
     signed_date: Optional[datetime] = None
     contract_value: Optional[float] = None
-
-class CreateAlertRequest(BaseModel):
-    artist_id: str
-    alert_type: str
-    threshold: float
-    title: str
-    message: str
-
-class BulkAnalysisRequest(BaseModel):
-    artist_ids: List[str]
-    analysis_types: List[str]  # ["breakout", "growth", "similarity"]
-
-# Response wrappers
-class APIResponse(BaseModel):
-    success: bool
-    data: Optional[Any] = None
-    message: Optional[str] = None
-    error: Optional[str] = None
-
-class PaginatedResponse(BaseModel):
-    items: List[Any]
-    total: int
-    page: int
-    per_page: int
-    has_next: bool
-    has_prev: bool
