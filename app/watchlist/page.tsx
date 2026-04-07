@@ -2,104 +2,29 @@
 
 import { useState, useEffect } from 'react'
 import { Star, TrendingUp, TrendingDown, AlertCircle, Calendar, Filter, Download, Plus } from 'lucide-react'
-import ArtistCard from '@/components/ArtistCard'
-
-interface WatchlistArtist {
-  id: string
-  name: string
-  image: string
-  genre: string
-  country: string
-  followers: number
-  monthlyListeners: number
-  growthRate: number
-  breakoutScore: number
-  platforms: string[]
-  topTrack: string
-  dateAdded: string
-  alerts: Array<{
-    type: 'growth' | 'milestone' | 'activity'
-    message: string
-    date: string
-  }>
-  priceChange: number
-  marketValue: number
-}
+import { Button } from '@/components/ui/Button'
+import { Badge } from '@/components/ui/Badge'
+import { Artist } from '@/lib/types'
+import { getWatchlist, updateArtistStatus } from '@/lib/api'
 
 export default function Watchlist() {
-  const [watchlistArtists, setWatchlistArtists] = useState<WatchlistArtist[]>([])
+  const [watchlistArtists, setWatchlistArtists] = useState<Artist[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [sortBy, setSortBy] = useState('dateAdded')
   const [filterBy, setFilterBy] = useState('all')
 
   useEffect(() => {
-    // Mock watchlist data
-    const mockWatchlist: WatchlistArtist[] = [
-      {
-        id: '1',
-        name: 'Shallipopi',
-        image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
-        genre: 'Afrobeats',
-        country: 'Nigeria',
-        followers: 780000,
-        monthlyListeners: 1600000,
-        growthRate: 245.6,
-        breakoutScore: 85.7,
-        platforms: ['Spotify', 'Audiomack', 'Boomplay'],
-        topTrack: 'Elon Musk',
-        dateAdded: '2024-01-15',
-        alerts: [
-          { type: 'growth', message: 'Growth rate increased by 45%', date: '2024-01-20' },
-          { type: 'milestone', message: 'Reached 1M monthly listeners', date: '2024-01-18' }
-        ],
-        priceChange: 23.5,
-        marketValue: 150000
-      },
-      {
-        id: '2',
-        name: 'Victony',
-        image: 'https://images.unsplash.com/photo-1494790108755-2616c9c0b8d3?w=400',
-        genre: 'Afrobeats',
-        country: 'Nigeria',
-        followers: 890000,
-        monthlyListeners: 1900000,
-        growthRate: 234.1,
-        breakoutScore: 87.9,
-        platforms: ['Spotify', 'Apple Music', 'Audiomack'],
-        topTrack: 'Holy Father',
-        dateAdded: '2024-01-10',
-        alerts: [
-          { type: 'activity', message: 'New collaboration announced', date: '2024-01-22' },
-          { type: 'growth', message: 'TikTok followers surged 67%', date: '2024-01-19' }
-        ],
-        priceChange: 18.2,
-        marketValue: 180000
-      },
-      {
-        id: '3',
-        name: 'Young Jonn',
-        image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400',
-        genre: 'Afrobeats',
-        country: 'Nigeria',
-        followers: 650000,
-        monthlyListeners: 1400000,
-        growthRate: 167.8,
-        breakoutScore: 82.1,
-        platforms: ['Spotify', 'Apple Music', 'Boomplay'],
-        topTrack: 'Dada',
-        dateAdded: '2024-01-05',
-        alerts: [
-          { type: 'milestone', message: 'First international playlist feature', date: '2024-01-21' }
-        ],
-        priceChange: -5.3,
-        marketValue: 120000
+    const fetchWatchlist = async () => {
+      try {
+        const data = await getWatchlist()
+        setWatchlistArtists(data)
+      } catch (error) {
+        console.error('Failed to fetch watchlist:', error)
+      } finally {
+        setIsLoading(false)
       }
-    ]
-
-    setTimeout(() => {
-      setWatchlistArtists(mockWatchlist)
-      setIsLoading(false)
-    }, 1000)
+    }
+    fetchWatchlist()
   }, [])
 
   const formatNumber = (num: number) => {
@@ -119,25 +44,29 @@ export default function Watchlist() {
 
   const sortedArtists = [...watchlistArtists].sort((a, b) => {
     switch (sortBy) {
-      case 'growthRate':
-        return b.growthRate - a.growthRate
       case 'breakoutScore':
-        return b.breakoutScore - a.breakoutScore
-      case 'marketValue':
-        return b.marketValue - a.marketValue
-      case 'priceChange':
-        return b.priceChange - a.priceChange
+        return b.breakout_score - a.breakout_score
+      case 'popularity':
+        return b.popularity - a.popularity
       default:
-        return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime()
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     }
   })
 
   const filteredArtists = sortedArtists.filter(artist => {
-    if (filterBy === 'rising') return artist.priceChange > 0
-    if (filterBy === 'declining') return artist.priceChange < 0
-    if (filterBy === 'alerts') return artist.alerts.length > 0
+    if (filterBy === 'signed') return artist.status === 'signed'
+    if (filterBy === 'available') return artist.status === 'available'
     return true
   })
+
+  const handleRemoveFromWatchlist = async (artistId: string) => {
+    try {
+      await updateArtistStatus(artistId, { is_watched: false })
+      setWatchlistArtists(prev => prev.filter(a => a.id !== artistId))
+    } catch (error) {
+      console.error('Failed to remove from watchlist:', error)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -161,110 +90,79 @@ export default function Watchlist() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#020617] text-white selection:bg-indigo-500/30">
+      {/* Background Glows */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full" />
+      </div>
+
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
+      <div className="relative z-10 border-b border-white/10 bg-black/20 backdrop-blur-md pt-20 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-end justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                <Star className="w-8 h-8 mr-3 text-yellow-500" />
-                Watchlist
+              <div className="flex items-center space-x-2 mb-2">
+                <Badge variant="outline" className="bg-yellow-500/10 border-yellow-500/20 text-yellow-400 font-bold uppercase tracking-widest text-[10px]">Priority Watch</Badge>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-[0.9]">
+                Global <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">Watchlist.</span>
               </h1>
-              <p className="text-gray-600 mt-1">Track your favorite artists and get real-time alerts</p>
+              <p className="text-gray-400 mt-4 text-xl font-medium max-w-xl">
+                Track emerging breakout artists and receive real-time intelligence alerts.
+              </p>
             </div>
-            <div className="flex items-center space-x-4">
-              <button className="btn btn-outline">
-                <Filter className="w-4 h-4 mr-2" />
-                Filters
-              </button>
-              <button className="btn btn-outline">
+            <div className="flex items-center space-x-4 w-full md:w-auto">
+              <Button variant="outline" className="flex-1 md:flex-none py-6 px-8">
                 <Download className="w-4 h-4 mr-2" />
                 Export
-              </button>
-              <button className="btn btn-primary">
+              </Button>
+              <Button variant="gradient" className="flex-1 md:flex-none py-6 px-8">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Artist
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="card">
-            <div className="card-body">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+          {[
+            { label: 'Total Tracked', count: watchlistArtists.length, icon: Star, color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
+            { label: 'Signed Artists', count: watchlistArtists.filter(a => a.status === 'signed').length, icon: AlertCircle, color: 'text-blue-400', bg: 'bg-blue-400/10' },
+            { label: 'Avg Breakout', count: (watchlistArtists.reduce((sum, a) => sum + a.breakout_score, 0) / (watchlistArtists.length || 1)).toFixed(1), icon: TrendingUp, color: 'text-green-400', bg: 'bg-green-400/10' },
+            { label: 'Avg Popularity', count: (watchlistArtists.reduce((sum, a) => sum + a.popularity, 0) / (watchlistArtists.length || 1)).toFixed(1), icon: TrendingUp, color: 'text-purple-400', bg: 'bg-purple-400/10' }
+          ].map((stat) => (
+            <div key={stat.label} className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/[0.05] transition-all">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Total Artists</p>
-                  <p className="text-2xl font-bold">{watchlistArtists.length}</p>
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{stat.label}</p>
+                  <p className="text-3xl font-black mt-1">{stat.count}</p>
                 </div>
-                <Star className="w-8 h-8 text-yellow-500" />
+                <div className={`w-12 h-12 ${stat.bg} rounded-xl flex items-center justify-center`}>
+                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="card">
-            <div className="card-body">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Active Alerts</p>
-                  <p className="text-2xl font-bold">
-                    {watchlistArtists.reduce((sum, artist) => sum + artist.alerts.length, 0)}
-                  </p>
-                </div>
-                <AlertCircle className="w-8 h-8 text-red-500" />
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="card-body">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Portfolio Value</p>
-                  <p className="text-2xl font-bold">
-                    {formatCurrency(watchlistArtists.reduce((sum, artist) => sum + artist.marketValue, 0))}
-                  </p>
-                </div>
-                <TrendingUp className="w-8 h-8 text-green-500" />
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="card-body">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Avg Growth</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    +{(watchlistArtists.reduce((sum, artist) => sum + artist.growthRate, 0) / watchlistArtists.length).toFixed(1)}%
-                  </p>
-                </div>
-                <TrendingUp className="w-8 h-8 text-blue-500" />
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Controls */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div>
-                <label className="label">Sort by</label>
+        <div className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8 mb-12">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="flex items-center space-x-6 w-full sm:w-auto">
+              <div className="flex-1 sm:flex-none">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Sort by Intelligence</label>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="input"
+                  className="w-full sm:w-48 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-yellow-400"
                 >
                   <option value="dateAdded">Date Added</option>
-                  <option value="growthRate">Growth Rate</option>
+                  <option value="popularity">Popularity</option>
                   <option value="breakoutScore">Breakout Score</option>
-                  <option value="marketValue">Market Value</option>
-                  <option value="priceChange">Price Change</option>
                 </select>
               </div>
               <div>
@@ -275,9 +173,8 @@ export default function Watchlist() {
                   className="input"
                 >
                   <option value="all">All Artists</option>
-                  <option value="rising">Rising</option>
-                  <option value="declining">Declining</option>
-                  <option value="alerts">With Alerts</option>
+                  <option value="signed">Signed</option>
+                  <option value="available">Available</option>
                 </select>
               </div>
             </div>
@@ -288,77 +185,68 @@ export default function Watchlist() {
         </div>
 
         {/* Artists List */}
-        <div className="space-y-6">
+        <div className="space-y-8">
           {filteredArtists.map(artist => (
-            <div key={artist.id} className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-start space-x-6">
-                <img
-                  src={artist.image}
-                  alt={artist.name}
-                  className="w-20 h-20 rounded-lg object-cover"
-                />
+            <div key={artist.id} className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/[0.05] transition-all group">
+              <div className="flex flex-col md:flex-row items-start gap-8">
+                <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-2xl bg-white/5 border border-white/10">
+                  <img
+                    src={artist.image_url || 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400'}
+                    alt={artist.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
                 
-                <div className="flex-1">
-                  <div className="flex items-start justify-between">
+                <div className="flex-1 w-full">
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">{artist.name}</h3>
-                      <p className="text-gray-600">{artist.genre} • {artist.country}</p>
-                      <p className="text-sm text-gray-500">Added {new Date(artist.dateAdded).toLocaleDateString()}</p>
+                      <h3 className="text-3xl font-black text-white">{artist.name}</h3>
+                      <p className="text-gray-400 font-medium mt-1">{artist.genres.join(', ')}</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mt-2">Added {new Date(artist.created_at).toLocaleDateString()}</p>
                     </div>
                     
-                    <div className="flex items-center space-x-4">
-                      <div className="text-right">
-                        <div className="text-lg font-bold">{formatCurrency(artist.marketValue)}</div>
-                        <div className={`text-sm flex items-center ${
-                          artist.priceChange >= 0 ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {artist.priceChange >= 0 ? (
-                            <TrendingUp className="w-4 h-4 mr-1" />
-                          ) : (
-                            <TrendingDown className="w-4 h-4 mr-1" />
-                          )}
-                          {artist.priceChange >= 0 ? '+' : ''}{artist.priceChange}%
-                        </div>
+                    <div className="flex items-center space-x-6">
+                      <div className="text-center sm:text-right">
+                        <div className="text-3xl font-black text-yellow-400">{artist.breakout_score.toFixed(1)}</div>
+                        <div className="text-[10px] font-black uppercase tracking-widest text-gray-500">Score</div>
                       </div>
                       
-                      <button className="btn btn-outline btn-sm">
-                        Remove
-                      </button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleRemoveFromWatchlist(artist.id)}
+                        className="text-red-400 hover:text-red-300 hover:bg-red-400/10 p-2"
+                      >
+                        <TrendingDown className="w-5 h-5" />
+                      </Button>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-8 border-y border-white/5 py-6">
                     <div>
-                      <div className="text-sm text-gray-600">Followers</div>
-                      <div className="font-semibold">{formatNumber(artist.followers)}</div>
+                      <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Followers</div>
+                      <div className="text-xl font-bold">{formatNumber(artist.followers)}</div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-600">Monthly Listeners</div>
-                      <div className="font-semibold">{formatNumber(artist.monthlyListeners)}</div>
+                      <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Popularity</div>
+                      <div className="text-xl font-bold">{artist.popularity}</div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-600">Growth Rate</div>
-                      <div className="font-semibold text-green-600">+{artist.growthRate}%</div>
+                      <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Status</div>
+                      <div className="text-xl font-bold uppercase text-indigo-400">{artist.status}</div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-600">Breakout Score</div>
-                      <div className="font-semibold">{artist.breakoutScore}/100</div>
+                      <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Market Trend</div>
+                      <div className="text-xl font-bold uppercase text-green-400">{artist.trend_direction}</div>
                     </div>
                   </div>
                   
-                  {artist.alerts.length > 0 && (
-                    <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
-                      <div className="flex items-center mb-2">
-                        <AlertCircle className="w-4 h-4 text-yellow-600 mr-2" />
-                        <span className="text-sm font-medium text-yellow-800">Recent Alerts</span>
+                  {artist.notes && (
+                    <div className="mt-8 p-4 bg-yellow-400/5 border border-yellow-400/10 rounded-2xl">
+                      <div className="text-[10px] font-black text-yellow-400 uppercase tracking-widest mb-2 flex items-center">
+                        <Star className="w-3 h-3 mr-2 fill-current" />
+                        A&R Intelligence Note
                       </div>
-                      <div className="space-y-1">
-                        {artist.alerts.slice(0, 2).map((alert, index) => (
-                          <div key={index} className="text-sm text-yellow-700">
-                            • {alert.message} ({new Date(alert.date).toLocaleDateString()})
-                          </div>
-                        ))}
-                      </div>
+                      <div className="text-gray-300 text-sm leading-relaxed">{artist.notes}</div>
                     </div>
                   )}
                 </div>
@@ -368,14 +256,14 @@ export default function Watchlist() {
         </div>
 
         {filteredArtists.length === 0 && (
-          <div className="text-center py-12">
-            <Star className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No artists in watchlist</h3>
-            <p className="text-gray-600 mb-4">Start building your watchlist by discovering new talent.</p>
-            <button className="btn btn-primary">
+          <div className="text-center py-24 bg-white/[0.02] rounded-[40px] border border-dashed border-white/10">
+            <Star className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+            <h3 className="text-2xl font-black text-gray-500 mb-2">No artists in watchlist</h3>
+            <p className="text-gray-600 font-medium mb-8">Start building your watchlist by discovering new talent.</p>
+            <Button variant="gradient">
               <Plus className="w-4 h-4 mr-2" />
               Add Your First Artist
-            </button>
+            </Button>
           </div>
         )}
       </div>

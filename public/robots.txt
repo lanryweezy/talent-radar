@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /portfolio/
+Disallow: /compare/
+Disallow: /watchlist/
+Disallow: /artists/
+Disallow: /analytics/
+
+Sitemap: https://talent-radar.vercel.app/sitemap.xml

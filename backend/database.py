@@ -15,14 +15,18 @@ DATABASE_URL = os.getenv(
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 
 # Create engine
-engine = create_engine(
-    DATABASE_URL,
-    connect_args=connect_args,
-    pool_size=10,
-    max_overflow=20,
-    pool_pre_ping=True,
-    echo=False  # Set to True for SQL debugging
-)
+engine_args = {
+    "connect_args": connect_args,
+    "pool_pre_ping": True,
+    "echo": False  # Set to True for SQL debugging
+}
+
+# pool_size and max_overflow are not supported by SQLite's default pool
+if not DATABASE_URL.startswith("sqlite"):
+    engine_args["pool_size"] = 10
+    engine_args["max_overflow"] = 20
+
+engine = create_engine(DATABASE_URL, **engine_args)
 
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
