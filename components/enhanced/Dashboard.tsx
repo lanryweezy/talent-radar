@@ -123,14 +123,18 @@ export default function Dashboard() {
             </div>
             
             <div className="flex items-center gap-3 p-2 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-3xl">
-              <Button variant="outline" className="rounded-xl px-6 border-white/5 bg-white/5 hover:bg-white/10">
-                <Filter className="w-4 h-4 mr-2" />
-                Advanced Filters
-              </Button>
-              <Button variant="gradient" className="rounded-xl px-6">
-                <Target className="w-4 h-4 mr-2" />
-                Start Discovery
-              </Button>
+              <Link href="/discover">
+                <Button variant="outline" className="rounded-xl px-6 border-white/5 bg-white/5 hover:bg-white/10">
+                  <Filter className="w-4 h-4 mr-2" />
+                  Advanced Filters
+                </Button>
+              </Link>
+              <Link href="/discover">
+                <Button variant="gradient" className="rounded-xl px-6">
+                  <Target className="w-4 h-4 mr-2" />
+                  Start Discovery
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

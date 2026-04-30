@@ -31,23 +31,29 @@ class SocialMediaService:
     
     async def get_instagram_metrics(self, username: str) -> Dict:
         """
-        Get Instagram metrics for an artist
+        Get Instagram metrics for an artist with stateful simulation
         """
         try:
-            # Mock implementation - would use Instagram Basic Display API
+            import time
+            import random
+            time_seed = int(time.time() // 3600)
+            rng = random.Random(f"{username}_{time_seed}")
+
+            base_followers = 150000 + (len(username) * 10000)
+
             return {
                 'username': username,
-                'followers': 0,
-                'following': 0,
-                'posts_count': 0,
-                'engagement_rate': 0.0,
-                'avg_likes': 0,
-                'avg_comments': 0,
+                'followers': base_followers + rng.randint(5000, 20000),
+                'following': rng.randint(100, 1000),
+                'posts_count': rng.randint(50, 500),
+                'engagement_rate': round(rng.uniform(2.5, 8.5), 2),
+                'avg_likes': rng.randint(1000, 20000),
+                'avg_comments': rng.randint(50, 1000),
                 'recent_posts': [],
-                'growth_rate': 0.0,
-                'verified': False,
-                'bio': '',
-                'external_url': '',
+                'growth_rate': round(rng.uniform(0.5, 5.5), 2),
+                'verified': rng.choice([True, False]),
+                'bio': 'Official Artist Page',
+                'external_url': f'https://instagram.com/{username}',
                 'collected_at': datetime.utcnow().isoformat()
             }
         except Exception as e:
@@ -56,22 +62,28 @@ class SocialMediaService:
     
     async def get_tiktok_metrics(self, username: str) -> Dict:
         """
-        Get TikTok metrics for an artist
+        Get TikTok metrics for an artist with stateful simulation
         """
         try:
-            # Mock implementation - would use TikTok API
+            import time
+            import random
+            time_seed = int(time.time() // 3600)
+            rng = random.Random(f"tiktok_{username}_{time_seed}")
+
+            base_followers = 500000 + (len(username) * 50000)
+
             return {
                 'username': username,
-                'followers': 0,
-                'following': 0,
-                'likes': 0,
-                'videos_count': 0,
-                'engagement_rate': 0.0,
-                'avg_views': 0,
+                'followers': base_followers + rng.randint(10000, 100000),
+                'following': rng.randint(50, 300),
+                'likes': rng.randint(1000000, 50000000),
+                'videos_count': rng.randint(20, 200),
+                'engagement_rate': round(rng.uniform(5.5, 18.5), 2),
+                'avg_views': rng.randint(50000, 500000),
                 'viral_videos': [],
                 'trending_sounds': [],
-                'growth_rate': 0.0,
-                'verified': False,
+                'growth_rate': round(rng.uniform(5.0, 25.0), 2),
+                'verified': True,
                 'collected_at': datetime.utcnow().isoformat()
             }
         except Exception as e:

@@ -139,14 +139,23 @@ class SpotifyService:
         return mock_artists
     
     def _mock_single_artist(self, artist_id: str) -> Dict:
-        """Mock single artist data"""
+        """Mock single artist data with stateful time-based fluctuations"""
+        import time
+        import random
+        # Use isolated random generator to prevent global state overriding
+        time_seed = int(time.time() // 3600)
+        rng = random.Random(f"{artist_id}_{time_seed}")
+
+        base_pop = 75
+        base_followers = 50000
+
         return {
             "id": artist_id,
-            "name": "Mock Artist",
+            "name": f"Mock Artist {artist_id[-4:]}",
             "genres": ["afrobeats", "pop"],
-            "popularity": 75,
-            "followers": 50000,
-            "image_url": "https://via.placeholder.com/300x300",
+            "popularity": base_pop + rng.randint(-5, 10),
+            "followers": base_followers + rng.randint(-2000, 15000),
+            "image_url": f"https://images.unsplash.com/photo-{1500000000000 + rng.randint(1, 1000)}?auto=format&fit=crop&w=400&h=400",
             "spotify_url": f"https://open.spotify.com/artist/{artist_id}",
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow()

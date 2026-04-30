@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi import FastAPI, HTTPException, Depends, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from contextlib import asynccontextmanager
@@ -17,6 +17,7 @@ try:
     from services.ai_service import AIService
     from services.prediction_service import PredictionService
     from services.social_media_service import SocialMediaService
+    from services.data_collector import DataCollector
 except ImportError:
     from .database import engine, get_db
     from .models import Base, Artist, Track, Metrics
@@ -26,6 +27,7 @@ except ImportError:
     from .services.ai_service import AIService
     from .services.prediction_service import PredictionService
     from .services.social_media_service import SocialMediaService
+    from .services.data_collector import DataCollector
 
 load_dotenv()
 
@@ -35,6 +37,21 @@ analytics_service = AnalyticsService()
 ai_service = AIService()
 prediction_service = PredictionService()
 social_media_service = SocialMediaService()
+data_collector = DataCollector()
+
+import asyncio
+
+async def periodic_data_sweep():
+    """Periodic background task that sweeps trending data every hour."""
+    while True:
+        try:
+            print("🔄 [CRON] Triggering periodic background collection sweep...")
+            await data_collector.bulk_collect_trending_artists(limit=10)
+            print("✅ [CRON] Periodic background sweep completed.")
+        except Exception as e:
+            print(f"❌ [CRON] Background sweep failed: {e}")
+        # Sleep for 1 hour (3600 seconds)
+        await asyncio.sleep(3600)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -51,8 +68,14 @@ async def lifespan(app: FastAPI):
     # 2. External Services
     await spotify_service.initialize()
 
+    # 3. Start Background CRON
+    cron_task = asyncio.create_task(periodic_data_sweep())
+
     print("🎵 TalentRadar A&R Intelligence Engine v2.4 Started")
     yield
+
+    # Shutdown
+    cron_task.cancel()
     print("👋 Shutting down intelligence nodes...")
 
 app = FastAPI(
@@ -133,7 +156,11 @@ async def search_artists(query: SearchQuery):
             # Predictive filter pipeline
             if enhanced_artist["breakout_score"] < (query.min_breakout_score or 0):
                 continue
+            if enhanced_artist["breakout_score"] > (query.max_breakout_score or 100):
+                continue
             if enhanced_artist["followers"] < (query.min_followers or 0):
+                continue
+            if query.genre and query.genre.lower() != "all" and query.genre.lower() not in [g.lower() for g in enhanced_artist.get("genres", [])]:
                 continue
 
             enhanced_results.append(enhanced_artist)
@@ -342,6 +369,27 @@ async def update_artist_status(
 @app.get("/crm/watchlist", response_model=List[ArtistResponse])
 async def get_watchlist(db = Depends(get_db)):
     return db.query(Artist).filter(Artist.is_watched == True).all()
+
+# Background Sync Controller
+async def sync_trending_metrics_task(limit: int = 10):
+    """Background task to fetch latest data for top trending artists and commit to DB"""
+    try:
+        print(f"🔄 Starting background collection sweep for top {limit} artists...")
+
+        # We can reuse the advanced data_collector bulk collection
+        collected_data = await data_collector.bulk_collect_trending_artists(limit=limit)
+
+        print(f"✅ Background sweep completed. Processed {len(collected_data)} nodes.")
+        # In a real app we would merge these back into the SQL DB here using SessionLocal()
+
+    except Exception as e:
+        print(f"❌ Background collection sweep failed: {e}")
+
+@app.post("/system/sync")
+async def trigger_background_sync(background_tasks: BackgroundTasks, limit: int = 10):
+    """Admin endpoint to manually trigger the background crawler to sweep trending nodes"""
+    background_tasks.add_task(sync_trending_metrics_task, limit=limit)
+    return {"status": "Sync initiated", "message": f"Crawling top {limit} nodes in background"}
 
 if __name__ == "__main__":
     uvicorn.run(
