@@ -176,7 +176,7 @@ class PredictionService:
         """
         try:
             if not self.breakout_model:
-                return 50.0  # Default neutral score
+                return self._calculate_breakout_score_rules(artist_data)
             
             features = self.extract_features(artist_data)
             

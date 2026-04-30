@@ -81,6 +81,14 @@ class AIService:
         genres = [g.lower() for g in data.get("genres", [])]
         pop = data.get("popularity", 50)
 
+        velocity = data.get("velocity", 0.0)
+        pop = data.get("popularity", 50)
+
+        # Supernova threshold: very high velocity and solid base popularity.
+        # This takes precedence over other genres if the growth is explosive.
+        if velocity > 0.8 and pop >= 60:
+            return "Supernova"
+
         if any(g in ["street", "pop", "hip hop"] for g in genres) and pop < 65:
             return "Street Viral Artist"
         if any(g in ["r&b", "soul", "jazz"] for g in genres):
@@ -93,13 +101,6 @@ class AIService:
             return "Alté Innovator"
         if any(g in ["soul", "gospel", "classical"] for g in genres):
             return "Vocal Powerhouse"
-
-        velocity = data.get("velocity", 0.0)
-        pop = data.get("popularity", 50)
-
-        # Supernova threshold: very high velocity and solid base popularity
-        if velocity > 0.8 and pop >= 60:
-            return "Supernova"
 
         return random.choice(list(self.ARCHETYPES.keys()))
 
