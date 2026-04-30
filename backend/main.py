@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi import FastAPI, HTTPException, Depends, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from contextlib import asynccontextmanager
@@ -15,6 +15,9 @@ try:
     from services.spotify_service import SpotifyService
     from services.analytics_service import AnalyticsService
     from services.ai_service import AIService
+    from services.prediction_service import PredictionService
+    from services.social_media_service import SocialMediaService
+    from services.data_collector import DataCollector
 except ImportError:
     from .database import engine, get_db
     from .models import Base, Artist, Track, Metrics
@@ -22,6 +25,9 @@ except ImportError:
     from .services.spotify_service import SpotifyService
     from .services.analytics_service import AnalyticsService
     from .services.ai_service import AIService
+    from .services.prediction_service import PredictionService
+    from .services.social_media_service import SocialMediaService
+    from .services.data_collector import DataCollector
 
 load_dotenv()
 
@@ -29,6 +35,23 @@ load_dotenv()
 spotify_service = SpotifyService()
 analytics_service = AnalyticsService()
 ai_service = AIService()
+prediction_service = PredictionService()
+social_media_service = SocialMediaService()
+data_collector = DataCollector()
+
+import asyncio
+
+async def periodic_data_sweep():
+    """Periodic background task that sweeps trending data every hour."""
+    while True:
+        try:
+            print("🔄 [CRON] Triggering periodic background collection sweep...")
+            await data_collector.bulk_collect_trending_artists(limit=10)
+            print("✅ [CRON] Periodic background sweep completed.")
+        except Exception as e:
+            print(f"❌ [CRON] Background sweep failed: {e}")
+        # Sleep for 1 hour (3600 seconds)
+        await asyncio.sleep(3600)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -45,8 +68,14 @@ async def lifespan(app: FastAPI):
     # 2. External Services
     await spotify_service.initialize()
 
+    # 3. Start Background CRON
+    cron_task = asyncio.create_task(periodic_data_sweep())
+
     print("🎵 TalentRadar A&R Intelligence Engine v2.4 Started")
     yield
+
+    # Shutdown
+    cron_task.cancel()
     print("👋 Shutting down intelligence nodes...")
 
 app = FastAPI(
@@ -108,17 +137,30 @@ async def search_artists(query: SearchQuery):
         for artist in spotify_results:
             ai_analysis = await ai_service.analyze_artist(artist)
 
+            # High-level social aggregation for discovery list
+            # We don't need deep sentiment here, just basic cross-platform validation
+            mock_username = artist.get("name", "").replace(" ", "").lower()
+            social_intelligence = {
+                "instagram_followers": (await social_media_service.get_instagram_metrics(mock_username)).get("followers", 0),
+                "tiktok_followers": (await social_media_service.get_tiktok_metrics(mock_username)).get("followers", 0),
+            }
+
             # Combine raw data with intelligence signals
             enhanced_artist = {
                 **artist,
                 **ai_analysis,
+                "social_intelligence": social_intelligence,
                 "country": artist.get("country", "Nigeria") # Default to region of interest
             }
 
             # Predictive filter pipeline
             if enhanced_artist["breakout_score"] < (query.min_breakout_score or 0):
                 continue
+            if enhanced_artist["breakout_score"] > (query.max_breakout_score or 100):
+                continue
             if enhanced_artist["followers"] < (query.min_followers or 0):
+                continue
+            if query.genre and query.genre.lower() != "all" and query.genre.lower() not in [g.lower() for g in enhanced_artist.get("genres", [])]:
                 continue
 
             enhanced_results.append(enhanced_artist)
@@ -136,15 +178,59 @@ async def get_artist(artist_id: str):
         if not artist_data:
             raise HTTPException(status_code=404, detail="Node ID not found in global index.")
         
+        # Parallel intelligence gathering (AI + Social)
         ai_insights = await ai_service.analyze_artist(artist_data)
         
+        # Mocking the username based on artist name for the social media service
+        mock_username = artist_data.get("name", "").replace(" ", "").lower()
+
+        social_intelligence = {
+            "instagram": await social_media_service.get_instagram_metrics(mock_username),
+            "tiktok": await social_media_service.get_tiktok_metrics(mock_username),
+            "twitter": await social_media_service.get_twitter_metrics(mock_username),
+            "youtube": await social_media_service.get_youtube_metrics(artist_id),
+            "sentiment": await social_media_service.analyze_social_sentiment(artist_data.get("name", ""))
+        }
+
+        # Merge all node intelligence
         return {
             **artist_data,
-            **ai_insights
+            **ai_insights,
+            "social_intelligence": social_intelligence
         }
     except Exception as e:
         print(f"Node Retrieval Error: {e}")
         raise HTTPException(status_code=500, detail="Node intelligence extraction failed.")
+
+@app.get("/artists/{artist_id}/social")
+async def get_artist_social_metrics(artist_id: str):
+    """Retrieve deep cross-platform social intelligence for a specific artist"""
+    try:
+        artist_data = await spotify_service.get_artist_details(artist_id)
+        if not artist_data:
+             raise HTTPException(status_code=404, detail="Artist not found")
+
+        artist_name = artist_data.get("name", "")
+        mock_username = artist_name.replace(" ", "").lower()
+
+        social_intelligence = {
+            "platforms": {
+                "instagram": await social_media_service.get_instagram_metrics(mock_username),
+                "tiktok": await social_media_service.get_tiktok_metrics(mock_username),
+                "twitter": await social_media_service.get_twitter_metrics(mock_username),
+                "youtube": await social_media_service.get_youtube_metrics(artist_id)
+            },
+            "sentiment": await social_media_service.analyze_social_sentiment(artist_name),
+            "viral_content": await social_media_service.detect_viral_content(artist_name),
+            "growth_trends": await social_media_service.get_social_growth_trends(artist_name)
+        }
+
+        # Calculate specialized social score
+        social_intelligence["social_score"] = social_media_service.calculate_social_breakout_score(social_intelligence)
+
+        return social_intelligence
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Social intelligence extraction failed.")
 
 @app.get("/artists/{artist_id}/tracks", response_model=List[TrackResponse])
 async def get_artist_tracks(artist_id: str, limit: int = 15):
@@ -200,6 +286,25 @@ async def get_market_heatmap():
         return await analytics_service.get_market_heatmap()
     except Exception as e:
         raise HTTPException(status_code=500, detail="Heatmap rendering failed.")
+
+@app.get("/analytics/predictions/market")
+async def get_market_predictions(region: str = 'global'):
+    """Get market-level predictions and trends"""
+    try:
+        return prediction_service.get_market_predictions(region=region)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Market prediction failed.")
+
+@app.get("/artists/{artist_id}/recommendations")
+async def get_artist_recommendations(artist_id: str):
+    """Get AI-powered recommendations for artist development"""
+    try:
+        artist_data = await spotify_service.get_artist_details(artist_id)
+        if not artist_data:
+             raise HTTPException(status_code=404, detail="Artist not found")
+        return prediction_service.get_artist_recommendations(artist_data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Artist recommendation failed.")
 
 @app.post("/predict/breakout")
 async def predict_breakout(artist_ids: List[str]):
@@ -264,6 +369,27 @@ async def update_artist_status(
 @app.get("/crm/watchlist", response_model=List[ArtistResponse])
 async def get_watchlist(db = Depends(get_db)):
     return db.query(Artist).filter(Artist.is_watched == True).all()
+
+# Background Sync Controller
+async def sync_trending_metrics_task(limit: int = 10):
+    """Background task to fetch latest data for top trending artists and commit to DB"""
+    try:
+        print(f"🔄 Starting background collection sweep for top {limit} artists...")
+
+        # We can reuse the advanced data_collector bulk collection
+        collected_data = await data_collector.bulk_collect_trending_artists(limit=limit)
+
+        print(f"✅ Background sweep completed. Processed {len(collected_data)} nodes.")
+        # In a real app we would merge these back into the SQL DB here using SessionLocal()
+
+    except Exception as e:
+        print(f"❌ Background collection sweep failed: {e}")
+
+@app.post("/system/sync")
+async def trigger_background_sync(background_tasks: BackgroundTasks, limit: int = 10):
+    """Admin endpoint to manually trigger the background crawler to sweep trending nodes"""
+    background_tasks.add_task(sync_trending_metrics_task, limit=limit)
+    return {"status": "Sync initiated", "message": f"Crawling top {limit} nodes in background"}
 
 if __name__ == "__main__":
     uvicorn.run(

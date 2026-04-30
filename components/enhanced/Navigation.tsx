@@ -54,6 +54,7 @@ export default function Navigation({ user }: NavigationProps) {
     { href: '/dashboard', label: 'Intelligence', icon: BarChart3 },
     { href: '/discover', label: 'Discover', icon: Search },
     { href: '/portfolio', label: 'Portfolio', icon: Briefcase },
+    { href: '/watchlist', label: 'CRM / Watchlist', icon: Star },
     { href: '/analytics', label: 'Market Analytics', icon: TrendingUp },
     { href: '/compare', label: 'Artist Compare', icon: Zap },
     { href: '/artists', label: 'Artist Roster', icon: Users },

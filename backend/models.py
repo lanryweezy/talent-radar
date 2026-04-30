@@ -26,6 +26,12 @@ class Artist(Base):
     trend_direction = Column(String, default="stable")  # up, down, stable
     genre_confidence = Column(Float, default=0.0)
     
+    # Advanced AI Insights
+    archetype = Column(String)
+    audience_demographics = Column(JSON)
+    suggested_collaborations = Column(JSON)
+    campaign_strategy = Column(JSON)
+
     # Label Management (CRM) fields
     status = Column(String, default="available")  # signed, watching, contacted, available
     is_watched = Column(Boolean, default=False)

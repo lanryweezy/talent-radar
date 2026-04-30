@@ -11,6 +11,7 @@ import { Artist, Track } from '@/lib/types'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { toast } from 'react-hot-toast'
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 
 export default function ArtistProfile() {
   const params = useParams()
@@ -169,6 +170,7 @@ export default function ArtistProfile() {
               { id: 'analytics', label: 'Growth Engine', icon: BarChart3 },
               { id: 'tracks', label: 'Content Analysis', icon: Music },
               { id: 'predictions', label: 'Future Velocity', icon: Target },
+              { id: 'social', label: 'Social Intel', icon: Activity },
               { id: 'similar', label: 'Discovery Nodes', icon: Users },
             ].map(tab => (
               <button
@@ -298,32 +300,68 @@ export default function ArtistProfile() {
               </div>
 
               <section className="glass-card rounded-[40px] p-10 border border-white/5">
-                <div className="flex items-center justify-between mb-12">
+                <div className="flex items-center justify-between mb-8">
                    <h3 className="text-xl font-black uppercase tracking-widest flex items-center">
                     <Activity className="w-5 h-5 mr-3 text-orange-500" />
                     Growth Velocity Graph
                   </h3>
                   <div className="flex gap-2">
-                    <Badge className="bg-white/5 text-slate-400 border-white/10">30 Days</Badge>
-                    <Badge className="bg-orange-500 text-white border-0">90 Days</Badge>
+                    <Badge className="bg-orange-500 text-white border-0">30 Days</Badge>
                   </div>
                 </div>
-                <div className="h-64 flex items-end gap-2">
-                   {Array.from({ length: 24 }).map((_, i) => (
-                     <motion.div
-                       key={i}
-                       initial={{ height: 0 }}
-                       animate={{ height: `${20 + Math.random() * 80}%` }}
-                       className="flex-1 bg-white/5 rounded-t-lg relative group overflow-hidden"
-                     >
-                        <div className="absolute inset-0 bg-gradient-to-t from-orange-500/40 to-transparent group-hover:from-orange-500/60 transition-all" />
-                     </motion.div>
-                   ))}
-                </div>
-                <div className="flex justify-between mt-6 text-[10px] font-black text-slate-600 uppercase tracking-widest">
-                  <span>90 Days Ago</span>
-                  <span>Present</span>
-                </div>
+
+                {analytics?.daily_metrics ? (
+                  <div className="h-72 w-full mt-4">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={analytics.daily_metrics.map((m: any) => ({
+                        date: new Date(m.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                        followers: m.followers
+                      }))}>
+                        <defs>
+                          <linearGradient id="colorFollowers" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#f97316" stopOpacity={0.5}/>
+                            <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                        <XAxis
+                          dataKey="date"
+                          stroke="#64748b"
+                          fontSize={10}
+                          tickLine={false}
+                          axisLine={false}
+                          minTickGap={30}
+                        />
+                        <YAxis
+                          stroke="#64748b"
+                          fontSize={10}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(0)}k` : value}
+                          domain={['dataMin', 'dataMax']}
+                        />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: '#020617', borderColor: '#ffffff10', borderRadius: '12px' }}
+                          itemStyle={{ color: '#f97316', fontWeight: 'bold' }}
+                          labelStyle={{ color: '#94a3b8', fontSize: '12px', marginBottom: '4px' }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="followers"
+                          stroke="#f97316"
+                          strokeWidth={3}
+                          fillOpacity={1}
+                          fill="url(#colorFollowers)"
+                          animationDuration={2000}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-72 flex items-center justify-center text-slate-500 text-sm font-bold uppercase tracking-widest border border-dashed border-white/5 rounded-2xl">
+                    Loading trajectory data...
+                  </div>
+                )}
               </section>
             </motion.div>
           )}
@@ -414,13 +452,148 @@ export default function ArtistProfile() {
                      ))}
                    </div>
                 </section>
-                <div className="glass-card rounded-[32px] p-8 border border-white/5 bg-orange-500/5">
-                  <h4 className="text-xs font-black text-orange-500 uppercase tracking-widest mb-4">A&R Smart Prediction</h4>
-                  <p className="text-sm font-medium text-slate-300 leading-relaxed">
-                    Detected high-conversion signals in UK drill nodes. Crossover potential is extremely high if paired with a Tier-1 collaborator.
-                  </p>
-                </div>
+
+
+                {artist?.campaign_strategy && (
+                  <div className="glass-card rounded-[32px] p-8 border border-white/5 bg-orange-500/5">
+                    <h4 className="text-xs font-black text-orange-500 uppercase tracking-widest mb-4">A&R Campaign Strategy</h4>
+                    <p className="text-sm font-medium text-slate-300 leading-relaxed mb-4">
+                      {artist.campaign_strategy.primary_focus}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(artist.campaign_strategy.recommended_budget_split || {}).map(([channel, percentage]) => (
+                        <Badge key={channel} className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-[9px]">
+                          {channel}: {percentage as number}%
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {artist?.suggested_collaborations && artist.suggested_collaborations.length > 0 && (
+                  <section className="glass-card rounded-[32px] p-8 border border-white/5">
+                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Suggested Synergies</h4>
+                    <ul className="space-y-2">
+                      {artist.suggested_collaborations.map((collab, i) => (
+                        <li key={i} className="text-sm font-medium text-slate-300 flex items-center">
+                          <span className="w-1.5 h-1.5 bg-orange-500 rounded-full mr-3" />
+                          {collab}
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
               </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'social' && (
+            <motion.div
+              key="social"
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+              className="space-y-8"
+            >
+              {/* Audience Demographics */}
+              {artist?.audience_demographics && (
+                <section className="glass-card rounded-[32px] p-8 border border-white/5">
+                  <h3 className="text-xl font-black uppercase tracking-widest flex items-center mb-6 text-white">
+                    <Users className="w-5 h-5 mr-3 text-orange-500" />
+                    Audience Demographics
+                  </h3>
+                  <div className="flex gap-4">
+                    <div className="flex-1 text-center bg-white/5 p-4 rounded-xl border border-white/10">
+                      <div className="text-2xl font-black text-white">{artist.audience_demographics.primary_age_group}</div>
+                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Core Age Group</div>
+                    </div>
+                    <div className="flex-1 text-center bg-white/5 p-4 rounded-xl border border-white/10">
+                      <div className="flex justify-center items-center gap-2">
+                        <span className="text-2xl font-black text-blue-400">{artist.audience_demographics.gender_distribution.male}%</span>
+                        <span className="text-slate-600 text-2xl font-black">/</span>
+                        <span className="text-2xl font-black text-pink-400">{artist.audience_demographics.gender_distribution.female}%</span>
+                      </div>
+                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Male / Female</div>
+                    </div>
+                  </div>
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mr-2 flex items-center">Top Regions:</span>
+                    {artist.audience_demographics.top_regions.map((region, i) => (
+                       <Badge key={i} className="bg-orange-500/10 text-orange-400 border-orange-500/20 text-[10px]">{region}</Badge>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Cross Platform Social Intelligence */}
+              <section className="glass-card rounded-[32px] p-8 border border-white/5">
+                <h3 className="text-xl font-black uppercase tracking-widest flex items-center mb-6 text-white">
+                  <Activity className="w-5 h-5 mr-3 text-emerald-500" />
+                  Social Sentiment & Footprint
+                </h3>
+                {artist?.social_intelligence ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Sentiment Analysis */}
+                    {artist.social_intelligence.sentiment && (
+                      <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Sentiment Breakdown</h4>
+                        <div className="space-y-4">
+                           <div>
+                             <div className="flex justify-between text-[10px] font-black uppercase mb-1">
+                               <span className="text-emerald-400">Positive</span>
+                               <span className="text-emerald-400">{(artist.social_intelligence.sentiment.sentiment_breakdown.positive * 100).toFixed(0)}%</span>
+                             </div>
+                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                               <div className="h-full bg-emerald-500" style={{ width: `${artist.social_intelligence.sentiment.sentiment_breakdown.positive * 100}%` }} />
+                             </div>
+                           </div>
+                           <div>
+                             <div className="flex justify-between text-[10px] font-black uppercase mb-1">
+                               <span className="text-slate-400">Neutral</span>
+                               <span className="text-slate-400">{(artist.social_intelligence.sentiment.sentiment_breakdown.neutral * 100).toFixed(0)}%</span>
+                             </div>
+                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                               <div className="h-full bg-slate-500" style={{ width: `${artist.social_intelligence.sentiment.sentiment_breakdown.neutral * 100}%` }} />
+                             </div>
+                           </div>
+                           <div>
+                             <div className="flex justify-between text-[10px] font-black uppercase mb-1">
+                               <span className="text-rose-400">Negative</span>
+                               <span className="text-rose-400">{(artist.social_intelligence.sentiment.sentiment_breakdown.negative * 100).toFixed(0)}%</span>
+                             </div>
+                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                               <div className="h-full bg-rose-500" style={{ width: `${artist.social_intelligence.sentiment.sentiment_breakdown.negative * 100}%` }} />
+                             </div>
+                           </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Followers Grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-gradient-to-br from-purple-500/10 to-transparent p-4 rounded-xl border border-purple-500/20">
+                        <div className="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-1">Instagram</div>
+                        <div className="text-xl font-black text-white">{artist.social_intelligence.instagram?.followers ? formatNumber(artist.social_intelligence.instagram.followers) : 'N/A'}</div>
+                      </div>
+                      <div className="bg-gradient-to-br from-cyan-500/10 to-transparent p-4 rounded-xl border border-cyan-500/20">
+                        <div className="text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-1">TikTok</div>
+                        <div className="text-xl font-black text-white">{artist.social_intelligence.tiktok?.followers ? formatNumber(artist.social_intelligence.tiktok.followers) : 'N/A'}</div>
+                      </div>
+                      <div className="bg-gradient-to-br from-blue-500/10 to-transparent p-4 rounded-xl border border-blue-500/20">
+                        <div className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Twitter</div>
+                        <div className="text-xl font-black text-white">{artist.social_intelligence.twitter?.followers ? formatNumber(artist.social_intelligence.twitter.followers) : 'N/A'}</div>
+                      </div>
+                      <div className="bg-gradient-to-br from-red-500/10 to-transparent p-4 rounded-xl border border-red-500/20">
+                        <div className="text-[10px] font-black text-red-400 uppercase tracking-widest mb-1">YouTube</div>
+                        <div className="text-xl font-black text-white">{artist.social_intelligence.youtube?.subscribers ? formatNumber(artist.social_intelligence.youtube.subscribers) : 'N/A'}</div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-slate-500">
+                    <Activity className="w-8 h-8 mb-4 opacity-50" />
+                    <p className="text-sm font-bold uppercase tracking-widest">Cross-platform integration pending</p>
+                  </div>
+                )}
+              </section>
             </motion.div>
           )}
 

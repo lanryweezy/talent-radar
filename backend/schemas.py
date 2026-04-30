@@ -35,6 +35,14 @@ class ArtistResponse(BaseModel):
     strategic_intelligence: Optional[List[str]] = None
     country: Optional[str] = None
 
+    # Advanced AI Insights
+    audience_demographics: Optional[Dict[str, Any]] = None
+    suggested_collaborations: Optional[List[str]] = None
+    campaign_strategy: Optional[Dict[str, Any]] = None
+
+    # Cross-Platform Social Intelligence
+    social_intelligence: Optional[Dict[str, Any]] = None
+
     # Label Management (CRM) fields
     status: Optional[str] = "available"
     is_watched: Optional[bool] = False

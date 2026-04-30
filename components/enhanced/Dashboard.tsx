@@ -43,12 +43,21 @@ export default function Dashboard() {
     role: 'Lead Strategist'
   }
 
+  const [marketPredictions, setMarketPredictions] = useState<any>(null)
+
   useEffect(() => {
     async function fetchPredictions() {
       setIsLoadingPredictions(true)
       try {
         const data = await getTrendingArtists('global', undefined, 3)
         setAiPredictions(data.trending_artists)
+
+        // Fetch market predictions from new endpoint
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/analytics/predictions/market`)
+        if (response.ok) {
+          const marketData = await response.json()
+          setMarketPredictions(marketData)
+        }
       } catch (error) {
         console.error('Failed to fetch predictions:', error)
       } finally {
@@ -114,14 +123,18 @@ export default function Dashboard() {
             </div>
             
             <div className="flex items-center gap-3 p-2 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-3xl">
-              <Button variant="outline" className="rounded-xl px-6 border-white/5 bg-white/5 hover:bg-white/10">
-                <Filter className="w-4 h-4 mr-2" />
-                Advanced Filters
-              </Button>
-              <Button variant="gradient" className="rounded-xl px-6">
-                <Target className="w-4 h-4 mr-2" />
-                Start Discovery
-              </Button>
+              <Link href="/discover">
+                <Button variant="outline" className="rounded-xl px-6 border-white/5 bg-white/5 hover:bg-white/10">
+                  <Filter className="w-4 h-4 mr-2" />
+                  Advanced Filters
+                </Button>
+              </Link>
+              <Link href="/discover">
+                <Button variant="gradient" className="rounded-xl px-6">
+                  <Target className="w-4 h-4 mr-2" />
+                  Start Discovery
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -130,9 +143,9 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
           {[
             { label: 'Intelligence Base', value: '2.4M+', change: '+12%', icon: Users, color: 'text-blue-400' },
-            { label: 'Breakout Precision', value: '96.4%', change: '+2.1%', icon: ShieldCheck, color: 'text-emerald-400' },
+            { label: 'Predicted Breakouts (30d)', value: marketPredictions?.predicted_breakouts_next_month || '25', change: '+2.1%', icon: ShieldCheck, color: 'text-emerald-400' },
             { label: 'Signals / Sec', value: '154K', change: '+34k', icon: Activity, color: 'text-orange-400' },
-            { label: 'Active Breakouts', value: '847', change: '+23%', icon: Flame, color: 'text-rose-400' }
+            { label: 'Hot Market', value: marketPredictions?.hot_markets?.[0]?.market || 'Lagos', change: marketPredictions?.hot_markets?.[0]?.heat_score ? `${(marketPredictions.hot_markets[0].heat_score * 100).toFixed(0)}% Heat` : '+23%', icon: Flame, color: 'text-rose-400' }
           ].map((stat, i) => (
             <Card key={i} className="bg-white/5 border-white/10 rounded-2xl overflow-hidden hover:border-orange-500/30 transition-all group cursor-default">
               <CardContent className="p-6">

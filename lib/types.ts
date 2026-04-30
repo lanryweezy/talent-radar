@@ -22,6 +22,35 @@ export interface Artist {
   archetype?: string;
   strategic_intelligence?: string[];
   country?: string;
+  audience_demographics?: {
+    primary_age_group: string;
+    gender_distribution: {
+      male: number;
+      female: number;
+    };
+    top_regions: string[];
+  };
+  suggested_collaborations?: string[];
+  campaign_strategy?: {
+    primary_focus: string;
+    recommended_budget_split: Record<string, number>;
+    timeline: string;
+    key_kpi: string;
+  };
+  social_intelligence?: {
+    instagram?: { followers: number };
+    tiktok?: { followers: number };
+    twitter?: { followers: number };
+    youtube?: { subscribers: number };
+    sentiment?: {
+      sentiment_breakdown: {
+        positive: number;
+        neutral: number;
+        negative: number;
+      };
+      viral_moments?: string[];
+    };
+  };
 }
 
 export interface Track {

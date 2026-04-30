@@ -20,6 +20,9 @@ interface Artist {
   recentActivity: string
   archetype?: string
   momentum?: number
+  campaign_strategy?: {
+    primary_focus: string;
+  }
 }
 
 interface ArtistCardProps {
@@ -182,6 +185,14 @@ export default function ArtistCard({ artist, showActions = true, compact = false
             />
           </div>
         </div>
+
+        {/* Campaign Focus (AI Insight) */}
+        {artist.campaign_strategy && (
+          <div className="mb-4 text-xs">
+            <span className="text-slate-500 font-bold uppercase text-[10px]">Strategy Focus: </span>
+            <span className="text-orange-300/80 italic">{artist.campaign_strategy.primary_focus}</span>
+          </div>
+        )}
 
         {/* Action Buttons */}
         {showActions && (
