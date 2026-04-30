@@ -32,6 +32,10 @@ class AIService:
             "Vocal Powerhouse": {
                 "desc": "Exceptional vocal range, traditional appeal, long-term stability.",
                 "strategies": ["Live performance showcases", "Acoustic sessions", "TV/Film soundtrack sync"]
+            },
+            "Supernova": {
+                "desc": "Explosive multi-platform growth, high virality, instant mainstream appeal.",
+                "strategies": ["Aggressive cross-platform scaling", "Immediate major label bidding", "High-profile brand partnerships"]
             }
         }
     
@@ -51,6 +55,13 @@ class AIService:
         # 4. Strategic Intelligence
         intel = self._generate_strategic_intel(artist_data, archetype_key)
         
+        breakout_score = self._calculate_breakout_score(artist_data)
+
+        # 5. Advanced Intelligence Features
+        demographics = self.analyze_audience_demographics(artist_data)
+        collaborations = self.suggest_collaborations(artist_data, archetype_key)
+        campaign = self.generate_campaign_strategy(artist_data, archetype_key, breakout_score)
+
         return {
             "archetype": archetype_key,
             "archetype_description": archetype_data["desc"],
@@ -58,7 +69,10 @@ class AIService:
             "confidence": prediction["confidence"],
             "market_fit_score": market_fit,
             "strategic_intelligence": intel,
-            "breakout_score": self._calculate_breakout_score(artist_data),
+            "breakout_score": breakout_score,
+            "audience_demographics": demographics,
+            "suggested_collaborations": collaborations,
+            "campaign_strategy": campaign,
             "analysis_timestamp": datetime.utcnow().isoformat()
         }
 
@@ -79,6 +93,13 @@ class AIService:
             return "Alté Innovator"
         if any(g in ["soul", "gospel", "classical"] for g in genres):
             return "Vocal Powerhouse"
+
+        velocity = data.get("velocity", 0.0)
+        pop = data.get("popularity", 50)
+
+        # Supernova threshold: very high velocity and solid base popularity
+        if velocity > 0.8 and pop >= 60:
+            return "Supernova"
 
         return random.choice(list(self.ARCHETYPES.keys()))
 
@@ -118,15 +139,32 @@ class AIService:
         return (archetype_strategies + dynamic_intel)[:4]
 
     def _calculate_breakout_score(self, artist_data: Dict) -> float:
-        """Refined breakout score with cultural weighting"""
-        popularity = artist_data.get("popularity", 0)
-        velocity = artist_data.get("velocity", 0.05)
+        """Talent Score v2.4 formula: 0.40 Velocity + 0.25 Engagement + 0.15 Virality + 0.10 Consistency + 0.10 Cross-Platform"""
         
-        # Discovery sweet spot: popularity 45-78 with high velocity
-        if 45 <= popularity <= 78:
-            score = (popularity * 0.35) + (velocity * 550 * 0.65)
-        else:
-            score = (popularity * 0.65) + (velocity * 120 * 0.35)
+        # Get raw metrics with safe defaults, assuming 0-100 scale where applicable, or decimals
+        # Often data might not perfectly match these fields, so we infer them or use random generation for simulation if absent.
+        # In a real app, these would come from DataCollector/AnalyticsService
+
+        # Base velocity (usually decimal, convert to 0-100 equivalent for the score)
+        raw_velocity = artist_data.get("velocity", 0.05)
+        velocity_score = min(raw_velocity * 1000, 100.0) # Scale velocity up
+
+        # Simulate other components based on popularity and followers if not explicitly provided
+        pop = artist_data.get("popularity", 0)
+
+        engagement_score = artist_data.get("engagement_score", pop * 1.1)
+        virality_score = artist_data.get("virality_score", min(velocity_score * 1.2, 100.0))
+        consistency_score = artist_data.get("consistency_score", max(pop - 10, 0))
+        cross_platform_score = artist_data.get("cross_platform_score", min((pop + velocity_score)/2, 100.0))
+
+        # Talent Score v2.4 Formula
+        score = (
+            (0.40 * velocity_score) +
+            (0.25 * engagement_score) +
+            (0.15 * virality_score) +
+            (0.10 * consistency_score) +
+            (0.10 * cross_platform_score)
+        )
 
         return round(min(score, 100.0), 1)
 
@@ -147,6 +185,73 @@ class AIService:
                 "Negotiate strategic collaboration with Tier-1 lead",
                 "Execute visual storytelling campaign for top 3 tracks"
             ]
+        }
+
+    def analyze_audience_demographics(self, artist_data: Dict) -> Dict:
+        """Estimate audience demographics based on genre and platform presence"""
+        genres = [g.lower() for g in artist_data.get("genres", [])]
+
+        primary_age_group = "18-24"
+        gender_split = {"male": 50, "female": 50}
+
+        if any(g in ["street", "drill", "hip hop"] for g in genres):
+            gender_split = {"male": 65, "female": 35}
+            primary_age_group = "16-24"
+        elif any(g in ["r&b", "soul"] for g in genres):
+            gender_split = {"male": 35, "female": 65}
+            primary_age_group = "25-34"
+        elif any(g in ["pop", "k-pop"] for g in genres):
+            gender_split = {"male": 30, "female": 70}
+            primary_age_group = "13-24"
+
+        return {
+            "primary_age_group": primary_age_group,
+            "gender_distribution": gender_split,
+            "top_regions": ["US", "UK", "NG", "ZA"][:random.randint(2, 4)]
+        }
+
+    def suggest_collaborations(self, artist_data: Dict, archetype_key: str) -> List[str]:
+        """Identify potential synergistic artist collaborations"""
+        collabs = []
+        genres = artist_data.get("genres", [])
+        pop = artist_data.get("popularity", 0)
+
+        # Suggest collabs based on archetype
+        if archetype_key == "Global Crossover Potential":
+            collabs.append("Tier-1 US/UK Pop Artist")
+            collabs.append("Established Latin crossover act")
+        elif archetype_key == "Club Banger Specialist":
+            collabs.append("Top regional DJ/Producer")
+            collabs.append("Viral Amapiano vocalist")
+        elif archetype_key == "Supernova":
+            collabs.append("Global superstar (A-List)")
+            collabs.append("High-profile fashion brand (Sync)")
+        else:
+            collabs.append(f"Rising {genres[0] if genres else 'Pop'} artist in adjacent region")
+            collabs.append("Established legacy act for credibility")
+
+        return collabs
+
+    def generate_campaign_strategy(self, artist_data: Dict, archetype_key: str, breakout_score: float) -> Dict:
+        """Create a custom marketing campaign based on AI analysis"""
+        budget_allocation = {}
+        focus = ""
+
+        if breakout_score > 85 or archetype_key == "Supernova":
+            focus = "Aggressive Global Scaling"
+            budget_allocation = {"TikTok/Short Form": 40, "DSP Playlisting": 30, "OOH Advertising": 15, "PR/Press": 15}
+        elif breakout_score > 60:
+            focus = "Regional Dominance & Crossover Prep"
+            budget_allocation = {"TikTok/Short Form": 50, "DSP Playlisting": 25, "Influencer Seeding": 20, "Live Events": 5}
+        else:
+            focus = "Core Fanbase Building"
+            budget_allocation = {"Community Building": 40, "Content Production": 30, "Niche Playlisting": 20, "Targeted Social Ads": 10}
+
+        return {
+            "primary_focus": focus,
+            "recommended_budget_split": budget_allocation,
+            "timeline": "3-6 months",
+            "key_kpi": "Streaming velocity and UGC creation rate" if breakout_score > 60 else "Follower conversion rate and engagement"
         }
 
     async def find_similar_artists(self, artist_id: str, limit: int = 10) -> List[Dict]:
