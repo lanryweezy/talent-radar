@@ -11,6 +11,7 @@ import { Artist, Track } from '@/lib/types'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { toast } from 'react-hot-toast'
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 
 export default function ArtistProfile() {
   const params = useParams()
@@ -299,32 +300,68 @@ export default function ArtistProfile() {
               </div>
 
               <section className="glass-card rounded-[40px] p-10 border border-white/5">
-                <div className="flex items-center justify-between mb-12">
+                <div className="flex items-center justify-between mb-8">
                    <h3 className="text-xl font-black uppercase tracking-widest flex items-center">
                     <Activity className="w-5 h-5 mr-3 text-orange-500" />
                     Growth Velocity Graph
                   </h3>
                   <div className="flex gap-2">
-                    <Badge className="bg-white/5 text-slate-400 border-white/10">30 Days</Badge>
-                    <Badge className="bg-orange-500 text-white border-0">90 Days</Badge>
+                    <Badge className="bg-orange-500 text-white border-0">30 Days</Badge>
                   </div>
                 </div>
-                <div className="h-64 flex items-end gap-2">
-                   {Array.from({ length: 24 }).map((_, i) => (
-                     <motion.div
-                       key={i}
-                       initial={{ height: 0 }}
-                       animate={{ height: `${20 + Math.random() * 80}%` }}
-                       className="flex-1 bg-white/5 rounded-t-lg relative group overflow-hidden"
-                     >
-                        <div className="absolute inset-0 bg-gradient-to-t from-orange-500/40 to-transparent group-hover:from-orange-500/60 transition-all" />
-                     </motion.div>
-                   ))}
-                </div>
-                <div className="flex justify-between mt-6 text-[10px] font-black text-slate-600 uppercase tracking-widest">
-                  <span>90 Days Ago</span>
-                  <span>Present</span>
-                </div>
+
+                {analytics?.daily_metrics ? (
+                  <div className="h-72 w-full mt-4">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={analytics.daily_metrics.map((m: any) => ({
+                        date: new Date(m.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                        followers: m.followers
+                      }))}>
+                        <defs>
+                          <linearGradient id="colorFollowers" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#f97316" stopOpacity={0.5}/>
+                            <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                        <XAxis
+                          dataKey="date"
+                          stroke="#64748b"
+                          fontSize={10}
+                          tickLine={false}
+                          axisLine={false}
+                          minTickGap={30}
+                        />
+                        <YAxis
+                          stroke="#64748b"
+                          fontSize={10}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(0)}k` : value}
+                          domain={['dataMin', 'dataMax']}
+                        />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: '#020617', borderColor: '#ffffff10', borderRadius: '12px' }}
+                          itemStyle={{ color: '#f97316', fontWeight: 'bold' }}
+                          labelStyle={{ color: '#94a3b8', fontSize: '12px', marginBottom: '4px' }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="followers"
+                          stroke="#f97316"
+                          strokeWidth={3}
+                          fillOpacity={1}
+                          fill="url(#colorFollowers)"
+                          animationDuration={2000}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-72 flex items-center justify-center text-slate-500 text-sm font-bold uppercase tracking-widest border border-dashed border-white/5 rounded-2xl">
+                    Loading trajectory data...
+                  </div>
+                )}
               </section>
             </motion.div>
           )}
