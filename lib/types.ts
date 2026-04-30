@@ -37,6 +37,20 @@ export interface Artist {
     timeline: string;
     key_kpi: string;
   };
+  social_intelligence?: {
+    instagram?: { followers: number };
+    tiktok?: { followers: number };
+    twitter?: { followers: number };
+    youtube?: { subscribers: number };
+    sentiment?: {
+      sentiment_breakdown: {
+        positive: number;
+        neutral: number;
+        negative: number;
+      };
+      viral_moments?: string[];
+    };
+  };
 }
 
 export interface Track {

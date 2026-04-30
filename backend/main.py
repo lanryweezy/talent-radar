@@ -16,6 +16,7 @@ try:
     from services.analytics_service import AnalyticsService
     from services.ai_service import AIService
     from services.prediction_service import PredictionService
+    from services.social_media_service import SocialMediaService
 except ImportError:
     from .database import engine, get_db
     from .models import Base, Artist, Track, Metrics
@@ -24,6 +25,7 @@ except ImportError:
     from .services.analytics_service import AnalyticsService
     from .services.ai_service import AIService
     from .services.prediction_service import PredictionService
+    from .services.social_media_service import SocialMediaService
 
 load_dotenv()
 
@@ -32,6 +34,7 @@ spotify_service = SpotifyService()
 analytics_service = AnalyticsService()
 ai_service = AIService()
 prediction_service = PredictionService()
+social_media_service = SocialMediaService()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -111,10 +114,19 @@ async def search_artists(query: SearchQuery):
         for artist in spotify_results:
             ai_analysis = await ai_service.analyze_artist(artist)
 
+            # High-level social aggregation for discovery list
+            # We don't need deep sentiment here, just basic cross-platform validation
+            mock_username = artist.get("name", "").replace(" ", "").lower()
+            social_intelligence = {
+                "instagram_followers": (await social_media_service.get_instagram_metrics(mock_username)).get("followers", 0),
+                "tiktok_followers": (await social_media_service.get_tiktok_metrics(mock_username)).get("followers", 0),
+            }
+
             # Combine raw data with intelligence signals
             enhanced_artist = {
                 **artist,
                 **ai_analysis,
+                "social_intelligence": social_intelligence,
                 "country": artist.get("country", "Nigeria") # Default to region of interest
             }
 
@@ -139,15 +151,59 @@ async def get_artist(artist_id: str):
         if not artist_data:
             raise HTTPException(status_code=404, detail="Node ID not found in global index.")
         
+        # Parallel intelligence gathering (AI + Social)
         ai_insights = await ai_service.analyze_artist(artist_data)
         
+        # Mocking the username based on artist name for the social media service
+        mock_username = artist_data.get("name", "").replace(" ", "").lower()
+
+        social_intelligence = {
+            "instagram": await social_media_service.get_instagram_metrics(mock_username),
+            "tiktok": await social_media_service.get_tiktok_metrics(mock_username),
+            "twitter": await social_media_service.get_twitter_metrics(mock_username),
+            "youtube": await social_media_service.get_youtube_metrics(artist_id),
+            "sentiment": await social_media_service.analyze_social_sentiment(artist_data.get("name", ""))
+        }
+
+        # Merge all node intelligence
         return {
             **artist_data,
-            **ai_insights
+            **ai_insights,
+            "social_intelligence": social_intelligence
         }
     except Exception as e:
         print(f"Node Retrieval Error: {e}")
         raise HTTPException(status_code=500, detail="Node intelligence extraction failed.")
+
+@app.get("/artists/{artist_id}/social")
+async def get_artist_social_metrics(artist_id: str):
+    """Retrieve deep cross-platform social intelligence for a specific artist"""
+    try:
+        artist_data = await spotify_service.get_artist_details(artist_id)
+        if not artist_data:
+             raise HTTPException(status_code=404, detail="Artist not found")
+
+        artist_name = artist_data.get("name", "")
+        mock_username = artist_name.replace(" ", "").lower()
+
+        social_intelligence = {
+            "platforms": {
+                "instagram": await social_media_service.get_instagram_metrics(mock_username),
+                "tiktok": await social_media_service.get_tiktok_metrics(mock_username),
+                "twitter": await social_media_service.get_twitter_metrics(mock_username),
+                "youtube": await social_media_service.get_youtube_metrics(artist_id)
+            },
+            "sentiment": await social_media_service.analyze_social_sentiment(artist_name),
+            "viral_content": await social_media_service.detect_viral_content(artist_name),
+            "growth_trends": await social_media_service.get_social_growth_trends(artist_name)
+        }
+
+        # Calculate specialized social score
+        social_intelligence["social_score"] = social_media_service.calculate_social_breakout_score(social_intelligence)
+
+        return social_intelligence
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Social intelligence extraction failed.")
 
 @app.get("/artists/{artist_id}/tracks", response_model=List[TrackResponse])
 async def get_artist_tracks(artist_id: str, limit: int = 15):

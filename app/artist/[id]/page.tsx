@@ -169,6 +169,7 @@ export default function ArtistProfile() {
               { id: 'analytics', label: 'Growth Engine', icon: BarChart3 },
               { id: 'tracks', label: 'Content Analysis', icon: Music },
               { id: 'predictions', label: 'Future Velocity', icon: Target },
+              { id: 'social', label: 'Social Intel', icon: Activity },
               { id: 'similar', label: 'Discovery Nodes', icon: Users },
             ].map(tab => (
               <button
@@ -415,21 +416,6 @@ export default function ArtistProfile() {
                    </div>
                 </section>
 
-                {artist?.audience_demographics && (
-                  <section className="glass-card rounded-[32px] p-8 border border-white/5">
-                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-6">Audience Demographics (AI)</h4>
-                    <div className="flex gap-4">
-                      <div className="flex-1 text-center bg-white/5 p-4 rounded-xl">
-                        <div className="text-sm font-black text-white">{artist.audience_demographics.primary_age_group}</div>
-                        <div className="text-[9px] font-black text-slate-500 uppercase">Core Age</div>
-                      </div>
-                      <div className="flex-1 text-center bg-white/5 p-4 rounded-xl">
-                        <div className="text-sm font-black text-white">{artist.audience_demographics.gender_distribution.male}% / {artist.audience_demographics.gender_distribution.female}%</div>
-                        <div className="text-[9px] font-black text-slate-500 uppercase">M / F</div>
-                      </div>
-                    </div>
-                  </section>
-                )}
 
                 {artist?.campaign_strategy && (
                   <div className="glass-card rounded-[32px] p-8 border border-white/5 bg-orange-500/5">
@@ -461,6 +447,116 @@ export default function ArtistProfile() {
                   </section>
                 )}
               </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'social' && (
+            <motion.div
+              key="social"
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+              className="space-y-8"
+            >
+              {/* Audience Demographics */}
+              {artist?.audience_demographics && (
+                <section className="glass-card rounded-[32px] p-8 border border-white/5">
+                  <h3 className="text-xl font-black uppercase tracking-widest flex items-center mb-6 text-white">
+                    <Users className="w-5 h-5 mr-3 text-orange-500" />
+                    Audience Demographics
+                  </h3>
+                  <div className="flex gap-4">
+                    <div className="flex-1 text-center bg-white/5 p-4 rounded-xl border border-white/10">
+                      <div className="text-2xl font-black text-white">{artist.audience_demographics.primary_age_group}</div>
+                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Core Age Group</div>
+                    </div>
+                    <div className="flex-1 text-center bg-white/5 p-4 rounded-xl border border-white/10">
+                      <div className="flex justify-center items-center gap-2">
+                        <span className="text-2xl font-black text-blue-400">{artist.audience_demographics.gender_distribution.male}%</span>
+                        <span className="text-slate-600 text-2xl font-black">/</span>
+                        <span className="text-2xl font-black text-pink-400">{artist.audience_demographics.gender_distribution.female}%</span>
+                      </div>
+                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Male / Female</div>
+                    </div>
+                  </div>
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mr-2 flex items-center">Top Regions:</span>
+                    {artist.audience_demographics.top_regions.map((region, i) => (
+                       <Badge key={i} className="bg-orange-500/10 text-orange-400 border-orange-500/20 text-[10px]">{region}</Badge>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Cross Platform Social Intelligence */}
+              <section className="glass-card rounded-[32px] p-8 border border-white/5">
+                <h3 className="text-xl font-black uppercase tracking-widest flex items-center mb-6 text-white">
+                  <Activity className="w-5 h-5 mr-3 text-emerald-500" />
+                  Social Sentiment & Footprint
+                </h3>
+                {artist?.social_intelligence ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Sentiment Analysis */}
+                    {artist.social_intelligence.sentiment && (
+                      <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Sentiment Breakdown</h4>
+                        <div className="space-y-4">
+                           <div>
+                             <div className="flex justify-between text-[10px] font-black uppercase mb-1">
+                               <span className="text-emerald-400">Positive</span>
+                               <span className="text-emerald-400">{(artist.social_intelligence.sentiment.sentiment_breakdown.positive * 100).toFixed(0)}%</span>
+                             </div>
+                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                               <div className="h-full bg-emerald-500" style={{ width: `${artist.social_intelligence.sentiment.sentiment_breakdown.positive * 100}%` }} />
+                             </div>
+                           </div>
+                           <div>
+                             <div className="flex justify-between text-[10px] font-black uppercase mb-1">
+                               <span className="text-slate-400">Neutral</span>
+                               <span className="text-slate-400">{(artist.social_intelligence.sentiment.sentiment_breakdown.neutral * 100).toFixed(0)}%</span>
+                             </div>
+                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                               <div className="h-full bg-slate-500" style={{ width: `${artist.social_intelligence.sentiment.sentiment_breakdown.neutral * 100}%` }} />
+                             </div>
+                           </div>
+                           <div>
+                             <div className="flex justify-between text-[10px] font-black uppercase mb-1">
+                               <span className="text-rose-400">Negative</span>
+                               <span className="text-rose-400">{(artist.social_intelligence.sentiment.sentiment_breakdown.negative * 100).toFixed(0)}%</span>
+                             </div>
+                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                               <div className="h-full bg-rose-500" style={{ width: `${artist.social_intelligence.sentiment.sentiment_breakdown.negative * 100}%` }} />
+                             </div>
+                           </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Followers Grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-gradient-to-br from-purple-500/10 to-transparent p-4 rounded-xl border border-purple-500/20">
+                        <div className="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-1">Instagram</div>
+                        <div className="text-xl font-black text-white">{artist.social_intelligence.instagram?.followers ? formatNumber(artist.social_intelligence.instagram.followers) : 'N/A'}</div>
+                      </div>
+                      <div className="bg-gradient-to-br from-cyan-500/10 to-transparent p-4 rounded-xl border border-cyan-500/20">
+                        <div className="text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-1">TikTok</div>
+                        <div className="text-xl font-black text-white">{artist.social_intelligence.tiktok?.followers ? formatNumber(artist.social_intelligence.tiktok.followers) : 'N/A'}</div>
+                      </div>
+                      <div className="bg-gradient-to-br from-blue-500/10 to-transparent p-4 rounded-xl border border-blue-500/20">
+                        <div className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Twitter</div>
+                        <div className="text-xl font-black text-white">{artist.social_intelligence.twitter?.followers ? formatNumber(artist.social_intelligence.twitter.followers) : 'N/A'}</div>
+                      </div>
+                      <div className="bg-gradient-to-br from-red-500/10 to-transparent p-4 rounded-xl border border-red-500/20">
+                        <div className="text-[10px] font-black text-red-400 uppercase tracking-widest mb-1">YouTube</div>
+                        <div className="text-xl font-black text-white">{artist.social_intelligence.youtube?.subscribers ? formatNumber(artist.social_intelligence.youtube.subscribers) : 'N/A'}</div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-slate-500">
+                    <Activity className="w-8 h-8 mb-4 opacity-50" />
+                    <p className="text-sm font-bold uppercase tracking-widest">Cross-platform integration pending</p>
+                  </div>
+                )}
+              </section>
             </motion.div>
           )}
 
