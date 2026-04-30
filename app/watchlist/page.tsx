@@ -1,5 +1,6 @@
 'use client'
 
+import Image from "next/image"
 import { useState, useEffect } from 'react'
 import { Star, TrendingUp, TrendingDown, AlertCircle, Calendar, Filter, Download, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -190,9 +191,9 @@ export default function Watchlist() {
             <div key={artist.id} className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/[0.05] transition-all group">
               <div className="flex flex-col md:flex-row items-start gap-8">
                 <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-2xl bg-white/5 border border-white/10">
-                  <img
+                  <Image width={128} height={128}
                     src={artist.image_url || 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400'}
-                    alt={artist.name}
+                    alt={artist.name || "Artist Image"}
                     className="w-full h-full object-cover"
                   />
                 </div>

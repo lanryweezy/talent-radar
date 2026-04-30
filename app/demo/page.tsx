@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Play, Pause, Volume2, Maximize, Globe, TrendingUp, Users, Music, Star, ArrowRight, CheckCircle, Mail } from 'lucide-react'
 
 export default function Demo() {
@@ -9,7 +9,7 @@ export default function Demo() {
   const [duration] = useState(180) // 3 minutes demo
   const [currentSection, setCurrentSection] = useState(0)
 
-  const demoSections = [
+  const demoSections = React.useMemo(() => [
     {
       title: "Global Artist Discovery",
       description: "See how TalentRadar discovers emerging talent from every corner of the world",
@@ -34,7 +34,7 @@ export default function Demo() {
       timestamp: 135,
       features: ["Live data feeds", "Custom dashboards", "Alert systems"]
     }
-  ]
+  ], [])
 
   useEffect(() => {
     let interval: NodeJS.Timeout
@@ -62,7 +62,7 @@ export default function Demo() {
       }, 1000)
     }
     return () => clearInterval(interval)
-  }, [isPlaying, currentSection, duration])
+  }, [isPlaying, currentSection, duration, demoSections])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -284,7 +284,7 @@ export default function Demo() {
             Impressed? Join the Global A&R Revolution
           </h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Get early access to TalentRadar and start discovering the world's next superstars today
+            Get early access to TalentRadar and start discovering the world&apos;s next superstars today
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
             <button className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-8 py-4 rounded-lg font-bold text-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-200 flex items-center">

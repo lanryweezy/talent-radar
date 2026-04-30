@@ -1,5 +1,6 @@
 'use client'
 
+import Image from "next/image"
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -35,7 +36,7 @@ export default function Dashboard() {
       setPulseIndex((prev) => (prev + 1) % marketPulse.length)
     }, 4000)
     return () => clearInterval(timer)
-  }, [])
+  }, [marketPulse.length])
 
   const mockUser = {
     name: 'A&R Intelligence',
@@ -65,7 +66,7 @@ export default function Dashboard() {
       }
     }
     fetchPredictions()
-  }, [])
+  }, [marketPulse.length])
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-orange-500/30">
@@ -194,7 +195,7 @@ export default function Dashboard() {
                     <Link key={i} href={`/artist/${prediction.artist.id}`} className="block group">
                       <div className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-orange-500/30 hover:bg-white/[0.08] transition-all">
                         <div className="flex items-center gap-3">
-                          <img src={prediction.artist.image_url || '/placeholder.png'} className="w-10 h-10 rounded-xl object-cover ring-1 ring-white/10" />
+                          <Image width={40} height={40} alt={prediction.artist.name || "Artist Image"} src={prediction.artist.image_url || '/placeholder.png'} className="w-10 h-10 rounded-xl object-cover ring-1 ring-white/10" />
                           <div className="flex-1 min-w-0">
                             <h4 className="text-sm font-bold text-white truncate">{prediction.artist.name}</h4>
                             <div className="flex items-center text-[10px] text-slate-500 font-bold uppercase tracking-wider">

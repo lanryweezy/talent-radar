@@ -224,7 +224,7 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
 
                 <p className="text-xs text-gray-500 text-center">
                   By joining, you agree to receive updates about TalentRadar. 
-                  We respect your privacy and won't spam you.
+                  We respect your privacy and won&apos;t spam you.
                 </p>
               </form>
             </>
@@ -238,7 +238,7 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                 Welcome to the Future of A&R! 🎉
               </h3>
               <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                You're now on the exclusive waitlist for TalentRadar. 
+                You&apos;re now on the exclusive waitlist for TalentRadar.
                 Check your email for next steps and early access details.
               </p>
               

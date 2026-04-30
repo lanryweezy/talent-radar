@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { TrendingUp, Filter, Globe } from 'lucide-react'
 import ArtistCard from './ArtistCard'
 
@@ -19,11 +19,7 @@ export default function TrendingSection() {
   const [selectedRegion, setSelectedRegion] = useState('global')
   const [selectedGenre, setSelectedGenre] = useState('')
 
-  useEffect(() => {
-    fetchTrendingData()
-  }, [selectedRegion, selectedGenre])
-
-  const fetchTrendingData = async () => {
+  const fetchTrendingData = useCallback(async () => {
     setIsLoading(true)
     try {
       const params = new URLSearchParams({
@@ -46,7 +42,11 @@ export default function TrendingSection() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [selectedRegion, selectedGenre])
+
+  useEffect(() => {
+    fetchTrendingData()
+  }, [fetchTrendingData])
 
   const regions = [
     { value: 'global', label: 'Global' },

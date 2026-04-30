@@ -1,5 +1,6 @@
 'use client'
 
+import Image from "next/image"
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -321,7 +322,7 @@ export default function SearchBar({
                           >
                             <div className="w-10 h-10 bg-gradient-to-r from-yellow-400/20 to-orange-500/20 rounded-lg flex items-center justify-center">
                               {result.image ? (
-                                <img src={result.image} alt={result.title} className="w-full h-full object-cover rounded-lg" />
+                                <Image width={40} height={40} src={result.image} alt={result.title || "Result Image"} className="w-full h-full object-cover rounded-lg" />
                               ) : (
                                 <Icon className="w-5 h-5 text-yellow-400" />
                               )}
@@ -401,7 +402,7 @@ export default function SearchBar({
                       })
                     ) : !isLoading && (
                       <div className="p-8 text-center text-gray-400">
-                        No results found for "{query}"
+                        No results found for &quot;{query}&quot;
                       </div>
                     )}
                   </div>

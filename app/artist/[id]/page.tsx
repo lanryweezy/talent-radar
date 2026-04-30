@@ -107,9 +107,9 @@ export default function ArtistProfile() {
               className="relative group"
             >
               <div className="absolute inset-0 bg-orange-500/20 blur-3xl group-hover:bg-orange-500/30 transition-all" />
-              <img
+              <Image width={288} height={288}
                 src={artist?.image_url || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800'}
-                alt={artist?.name}
+                alt={artist?.name || "Artist image"}
                 className="w-72 h-72 rounded-[40px] object-cover border border-white/10 shadow-2xl relative z-10"
               />
               {artist?.breakout_score && artist.breakout_score > 80 && (
@@ -606,7 +606,7 @@ export default function ArtistProfile() {
               {similarArtists.map((item, i) => (
                 <div key={i} className="glass-card rounded-[32px] overflow-hidden group border border-white/5 hover:border-orange-500/20 transition-all">
                   <div className="relative h-64">
-                    <img src={item.artist.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <Image width={288} height={288} src={item.artist.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800"} alt={item.artist.name || "Artist Image"} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
                     <div className="absolute bottom-6 left-6">
                       <div className="text-2xl font-black text-white mb-1">{item.artist.name}</div>
