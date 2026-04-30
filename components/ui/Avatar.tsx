@@ -1,5 +1,6 @@
 'use client'
 
+import Image from "next/image"
 import { forwardRef } from 'react'
 import { cn } from '@/lib/utils'
 import { User } from 'lucide-react'
@@ -61,7 +62,7 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
         {...props}
       >
         {src ? (
-          <img
+          <Image width={128} height={128}
             src={src}
             alt={alt || 'Avatar'}
             className="w-full h-full object-cover"

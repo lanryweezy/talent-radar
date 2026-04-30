@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from "next/image"
 import { motion } from 'framer-motion'
 import { Play, ExternalLink, TrendingUp, Users, Music, Globe, Star, Heart, Share2, MoreHorizontal, Zap } from 'lucide-react'
 
@@ -51,9 +52,9 @@ export default function ArtistCard({ artist, showActions = true, compact = false
         className="glass-card rounded-xl p-3 border border-white/5 hover:border-orange-500/30 transition-all cursor-pointer"
       >
         <div className="flex items-center space-x-3">
-          <img
+          <Image width={40} height={40}
             src={artist.image}
-            alt={artist.name}
+            alt={artist.name || "Artist Image"}
             className="w-10 h-10 rounded-lg object-cover ring-1 ring-white/10"
           />
           <div className="flex-1 min-w-0">
@@ -82,9 +83,9 @@ export default function ArtistCard({ artist, showActions = true, compact = false
     >
       {/* Header Image */}
       <div className="relative h-56 overflow-hidden">
-        <img
+        <Image width={40} height={40}
           src={artist.image}
-          alt={artist.name}
+          alt={artist.name || "Artist Image"}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
