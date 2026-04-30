@@ -1,12 +1,22 @@
-import numpy as np
-import pandas as pd
+try:
+    import numpy as np
+    import pandas as pd
+    from sklearn.ensemble import RandomForestRegressor, GradientBoostingClassifier
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.model_selection import train_test_split
+    import joblib
+except ImportError:
+    np = None
+    pd = None
+    RandomForestRegressor = None
+    GradientBoostingClassifier = None
+    StandardScaler = None
+    train_test_split = None
+    joblib = None
+
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
 import logging
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-import joblib
 import os
 
 logger = logging.getLogger(__name__)
@@ -20,7 +30,7 @@ class PredictionService:
     def __init__(self):
         self.breakout_model = None
         self.growth_model = None
-        self.scaler = StandardScaler()
+        self.scaler = StandardScaler() if StandardScaler else None
         self.model_path = "models/"
         self._ensure_model_directory()
         self._load_models()
@@ -55,22 +65,26 @@ class PredictionService:
     
     def _initialize_default_models(self):
         """Initialize default models with basic configuration"""
-        self.breakout_model = GradientBoostingClassifier(
-            n_estimators=100,
-            learning_rate=0.1,
-            max_depth=6,
-            random_state=42
-        )
-        
-        self.growth_model = RandomForestRegressor(
-            n_estimators=100,
-            max_depth=10,
-            random_state=42
-        )
-        
-        logger.info("Initialized default prediction models")
+        if GradientBoostingClassifier:
+            self.breakout_model = GradientBoostingClassifier(
+                n_estimators=100,
+                learning_rate=0.1,
+                max_depth=6,
+                random_state=42
+            )
+
+            self.growth_model = RandomForestRegressor(
+                n_estimators=100,
+                max_depth=10,
+                random_state=42
+            )
+            logger.info("Initialized default prediction models")
+        else:
+            logger.warning("ML libraries not found, using rule-based fallback only")
+            self.breakout_model = None
+            self.growth_model = None
     
-    def extract_features(self, artist_data: Dict) -> np.ndarray:
+    def extract_features(self, artist_data: Dict) -> 'np.ndarray':
         """
         Extract features from artist data for ML models
         """

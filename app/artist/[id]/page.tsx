@@ -414,12 +414,52 @@ export default function ArtistProfile() {
                      ))}
                    </div>
                 </section>
-                <div className="glass-card rounded-[32px] p-8 border border-white/5 bg-orange-500/5">
-                  <h4 className="text-xs font-black text-orange-500 uppercase tracking-widest mb-4">A&R Smart Prediction</h4>
-                  <p className="text-sm font-medium text-slate-300 leading-relaxed">
-                    Detected high-conversion signals in UK drill nodes. Crossover potential is extremely high if paired with a Tier-1 collaborator.
-                  </p>
-                </div>
+
+                {artist?.audience_demographics && (
+                  <section className="glass-card rounded-[32px] p-8 border border-white/5">
+                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-6">Audience Demographics (AI)</h4>
+                    <div className="flex gap-4">
+                      <div className="flex-1 text-center bg-white/5 p-4 rounded-xl">
+                        <div className="text-sm font-black text-white">{artist.audience_demographics.primary_age_group}</div>
+                        <div className="text-[9px] font-black text-slate-500 uppercase">Core Age</div>
+                      </div>
+                      <div className="flex-1 text-center bg-white/5 p-4 rounded-xl">
+                        <div className="text-sm font-black text-white">{artist.audience_demographics.gender_distribution.male}% / {artist.audience_demographics.gender_distribution.female}%</div>
+                        <div className="text-[9px] font-black text-slate-500 uppercase">M / F</div>
+                      </div>
+                    </div>
+                  </section>
+                )}
+
+                {artist?.campaign_strategy && (
+                  <div className="glass-card rounded-[32px] p-8 border border-white/5 bg-orange-500/5">
+                    <h4 className="text-xs font-black text-orange-500 uppercase tracking-widest mb-4">A&R Campaign Strategy</h4>
+                    <p className="text-sm font-medium text-slate-300 leading-relaxed mb-4">
+                      {artist.campaign_strategy.primary_focus}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(artist.campaign_strategy.recommended_budget_split || {}).map(([channel, percentage]) => (
+                        <Badge key={channel} className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-[9px]">
+                          {channel}: {percentage as number}%
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {artist?.suggested_collaborations && artist.suggested_collaborations.length > 0 && (
+                  <section className="glass-card rounded-[32px] p-8 border border-white/5">
+                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Suggested Synergies</h4>
+                    <ul className="space-y-2">
+                      {artist.suggested_collaborations.map((collab, i) => (
+                        <li key={i} className="text-sm font-medium text-slate-300 flex items-center">
+                          <span className="w-1.5 h-1.5 bg-orange-500 rounded-full mr-3" />
+                          {collab}
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
               </div>
             </motion.div>
           )}

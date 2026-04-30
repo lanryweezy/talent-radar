@@ -15,6 +15,7 @@ try:
     from services.spotify_service import SpotifyService
     from services.analytics_service import AnalyticsService
     from services.ai_service import AIService
+    from services.prediction_service import PredictionService
 except ImportError:
     from .database import engine, get_db
     from .models import Base, Artist, Track, Metrics
@@ -22,6 +23,7 @@ except ImportError:
     from .services.spotify_service import SpotifyService
     from .services.analytics_service import AnalyticsService
     from .services.ai_service import AIService
+    from .services.prediction_service import PredictionService
 
 load_dotenv()
 
@@ -29,6 +31,7 @@ load_dotenv()
 spotify_service = SpotifyService()
 analytics_service = AnalyticsService()
 ai_service = AIService()
+prediction_service = PredictionService()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -200,6 +203,25 @@ async def get_market_heatmap():
         return await analytics_service.get_market_heatmap()
     except Exception as e:
         raise HTTPException(status_code=500, detail="Heatmap rendering failed.")
+
+@app.get("/analytics/predictions/market")
+async def get_market_predictions(region: str = 'global'):
+    """Get market-level predictions and trends"""
+    try:
+        return prediction_service.get_market_predictions(region=region)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Market prediction failed.")
+
+@app.get("/artists/{artist_id}/recommendations")
+async def get_artist_recommendations(artist_id: str):
+    """Get AI-powered recommendations for artist development"""
+    try:
+        artist_data = await spotify_service.get_artist_details(artist_id)
+        if not artist_data:
+             raise HTTPException(status_code=404, detail="Artist not found")
+        return prediction_service.get_artist_recommendations(artist_data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Artist recommendation failed.")
 
 @app.post("/predict/breakout")
 async def predict_breakout(artist_ids: List[str]):
